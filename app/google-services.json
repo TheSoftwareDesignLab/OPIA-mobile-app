@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "775567466205",
+    "firebase_url": "https://opia-d284c.firebaseio.com",
+    "project_id": "opia-d284c",
+    "storage_bucket": "opia-d284c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775567466205:android:13e0c2cfff91227b",
+        "android_client_info": {
+          "package_name": "com.lanabeji.opia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "775567466205-q5gao7pasb842hr614l06obli5dg653b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuVehC5xkfOfl2pakx2X9oh3nYIuWSAhU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
