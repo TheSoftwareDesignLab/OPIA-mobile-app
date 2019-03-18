@@ -9,10 +9,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -37,6 +39,7 @@ public class OpiaAccessibility extends AccessibilityService {
     String device = String.valueOf(UUID.randomUUID());
 
     FrameLayout mLayout;
+    Button powerButton;
 
     public OpiaAccessibility() {
     }
@@ -72,6 +75,7 @@ public class OpiaAccessibility extends AccessibilityService {
 
         if (String.valueOf(event.getPackageName()).equals(packageSelected)){
 
+            powerButton.setVisibility(View.VISIBLE);
             Log.d("ON EVENT", String.valueOf(event.getEventType()));
             String timestampEvent = String.valueOf(System.currentTimeMillis());
 
@@ -136,6 +140,16 @@ public class OpiaAccessibility extends AccessibilityService {
         LayoutInflater inflater = LayoutInflater.from(this);
         inflater.inflate(R.layout.action_button, mLayout);
         wm.addView(mLayout, lp);
+
+        powerButton = (Button) mLayout.findViewById(R.id.stop);
+        powerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
     }
 
     // EVENT'S METHODS

@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,11 +26,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE); //will hide the title
+        getSupportActionBar().hide(); // hide the title bar
         setContentView(R.layout.activity_main);
         context = this;
         sharedPref = context.getSharedPreferences(APP, Context.MODE_PRIVATE);
+
         askPermission();
-        seeExternal();
     }
 
     public void writeSelected(String packageSelected){
@@ -38,19 +41,10 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    public void onClickWA(View v)
+    public void start(View v)
     {
-        writeSelected("com.whatsapp");
-    }
-
-    public void onClickYT(View v)
-    {
-        writeSelected("com.google.android.youtube");
-    }
-
-    public void onClickFB(View v)
-    {
-        writeSelected("com.facebook.katana");
+        Intent intent = new Intent(this, ListActivity.class);
+        startActivity(intent);
     }
 
     public void askPermission(){
@@ -60,11 +54,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_EXTERNAL_STORAGE_PERMISSION);
         }
 
-        int readExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+/*        int readExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         if(readExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_EXTERNAL_STORAGE_PERMISSION);
-        }
+        }*/
     }
 
     private void seeExternal(){

@@ -1,34 +1,72 @@
 package com.lanabeji.opia;
 
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 public class ListActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    RecyclerView recyclerView;
+    AppListAdapter appListAdapter;
+    ArrayList<AppItem> apps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
+        apps = new ArrayList<AppItem>();
 
-        recyclerView = (RecyclerView) findViewById(R.id.rvApps);
+        final PackageManager pm = getPackageManager();
+        //get a list of installed apps.
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        recyclerView.setHasFixedSize(true);
+        String tag = "APP INFO";
+        List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
 
-        // use a linear layout manager
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        for (ApplicationInfo packageInfo : packages) {
 
-        // specify an adapter (see also next example)
-        //mAdapter = new MyAdapter(myDataset);
-        //recyclerView.setAdapter(mAdapter);
+            Intent launchActivity = pm.getLaunchIntentForPackage(packageInfo.packageName);
+
+            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null){
+                AppItem currentApp = new AppItem();
+
+                currentApp.setPackageName(packageInfo.packageName);
+                //Log.d(tag, "Installed package :" + packageInfo.packageName);
+
+                currentApp.setSourceDir(packageInfo.sourceDir);
+                //Log.d(tag, "Source dir : " + packageInfo.sourceDir);
+
+                currentApp.setLaunchActivity(launchActivity.toString());
+                //Log.d(tag, "Launch Activity :" + launchActivity);
+
+                currentApp.setImg(packageInfo.loadIcon(getPackageManager()));
+                currentApp.setName(packageInfo.loadLabel(getPackageManager()).toString());
+
+                apps.add(currentApp);
+            }
+        }
+
+        Collections.sort(apps, new Comparator<AppItem>() {
+            public int compare(AppItem o1, AppItem o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+        appListAdapter = new AppListAdapter(apps);
+
+        recyclerView = (RecyclerView)findViewById(R.id.rvApps);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(appListAdapter);
     }
 }
