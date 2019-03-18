@@ -91,7 +91,7 @@ public class OpiaAccessibility extends AccessibilityService {
                 handleClickEvent(event.getSource(), timestampEvent);
             }
             else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_SCROLLED){
-                //handleScrollEvent(event, timestampEvent);
+                handleScrollEvent(event, timestampEvent);
             }
         }
     }
@@ -214,7 +214,7 @@ public class OpiaAccessibility extends AccessibilityService {
         if (source.getText() != null){
             text = source.getText().toString();
         }
-        
+
         String packageSelected = String.valueOf(source.getPackageName());
         String elementId = source.getViewIdResourceName();
         String className = String.valueOf(source.getClassName());
@@ -254,14 +254,14 @@ public class OpiaAccessibility extends AccessibilityService {
 
         AccessibilityNodeInfo source = event.getSource();
 
-        String text = source.getText().toString();
+        String text = String.valueOf(source.getText());
         String packageSelected = String.valueOf(event.getPackageName());
         String elementId = source.getViewIdResourceName();
         String className = String.valueOf(source.getClassName());
         int scrollX = event.getScrollX();
         int scrollY = event.getScrollY();
 
-        Log.d("CLICKED", String.valueOf(event.getEventType()));
+        Log.d("SCROLLED", String.valueOf(event.getEventType()));
 
         Map<String, String> newEvent = new HashMap<>();
         newEvent.put("package", packageSelected);
@@ -274,9 +274,7 @@ public class OpiaAccessibility extends AccessibilityService {
         newEvent.put("scroll", ""+scrollX+"/"+scrollY);
 
         writeEvent(newEvent, timestampEvent);
-        //takeScreenshot(Integer.getInteger(timestampEvent));
     }
-
 
     private void writeEvent(Map<String,String> newEvent, String timestampEvent){
 
@@ -299,8 +297,7 @@ public class OpiaAccessibility extends AccessibilityService {
     private void takeScreenshot(String number){
         try{
             String command = "adb shell screencap /sdcard/" + number + ".png";
-            Process process;
-            process = Runtime.getRuntime().exec(command);
+            Runtime.getRuntime().exec(command);
         }
         catch(Exception e){
             Log.d("ERROR", "Couldn't take screenshot");
