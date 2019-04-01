@@ -14,6 +14,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String PACKAGE = "PACKAGE_SELECTED";
@@ -21,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_EXTERNAL_STORAGE_PERMISSION = 1;
     Context context;
     SharedPreferences sharedPref;
+    public final static String DEVICE = String.valueOf(UUID.randomUUID());
 
 
     @Override
@@ -31,14 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = this;
         sharedPref = context.getSharedPreferences(APP, Context.MODE_PRIVATE);
-
         askPermission();
-    }
-
-    public void writeSelected(String packageSelected){
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(PACKAGE, packageSelected);
-        editor.commit();
     }
 
     public void start(View v)
@@ -53,15 +51,15 @@ public class MainActivity extends AppCompatActivity {
         {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_EXTERNAL_STORAGE_PERMISSION);
         }
-
-/*        int readExternalStoragePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if(readExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_EXTERNAL_STORAGE_PERMISSION);
-        }*/
     }
 
     private void seeExternal(){
         Log.d("EXTERNAL",context.getExternalFilesDirs(null).toString());
     }
+
+
+
+
 }
+
+

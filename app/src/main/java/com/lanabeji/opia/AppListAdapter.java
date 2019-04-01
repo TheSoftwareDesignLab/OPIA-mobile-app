@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     List<AppItem> appList;
     Context context;
     SharedPreferences sharedPref;
+    public final static String RECORDING = "IS_RECORDING";
 
     public AppListAdapter(List<AppItem>AppList)
     {
@@ -55,22 +57,30 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 String message = "Do you want to select " + appItem.getName() + "?";
                 builder.setMessage(message);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("Record", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User clicked OK button
-                        Log.d("OK", "USER CLICKED OK");
+                        // User clicked Record button
+                        Log.d("Record", "USER CLICKED RECORD");
 
-                        writeSelected(appItem.getPackageName());
+                        writeSelected(appItem.getPackageName(), true);
                         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appItem.getPackageName());
                         if (launchIntent != null) {
+                            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             context.startActivity(launchIntent);
                         }
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNeutralButton("Replay", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                        Log.d("OK", "USER CLICKED CANCEL");
+                        // User clicked Replay button
+                        Log.d("Replay", "USER CLICKED Replay");
+
+                        writeSelected(appItem.getPackageName(), false);
+                        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appItem.getPackageName());
+                        if (launchIntent != null) {
+                            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            context.startActivity(launchIntent);
+                        }
                     }
                 });
 
@@ -85,9 +95,10 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         return appList.size();
     }
 
-    public void writeSelected(String packageSelected){
+    public void writeSelected(String packageSelected, boolean isRecording){
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(MainActivity.PACKAGE, packageSelected);
+        editor.putBoolean(RECORDING, isRecording);
         editor.commit();
     }
 

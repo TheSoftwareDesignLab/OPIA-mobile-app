@@ -37,21 +37,14 @@ public class ListActivity extends AppCompatActivity {
 
             Intent launchActivity = pm.getLaunchIntentForPackage(packageInfo.packageName);
 
-            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null){
+            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null && !packageInfo.packageName.equals("com.lanabeji.opia")){
                 AppItem currentApp = new AppItem();
 
                 currentApp.setPackageName(packageInfo.packageName);
-                //Log.d(tag, "Installed package :" + packageInfo.packageName);
-
                 currentApp.setSourceDir(packageInfo.sourceDir);
-                //Log.d(tag, "Source dir : " + packageInfo.sourceDir);
-
                 currentApp.setLaunchActivity(launchActivity.toString());
-                //Log.d(tag, "Launch Activity :" + launchActivity);
-
                 currentApp.setImg(packageInfo.loadIcon(getPackageManager()));
                 currentApp.setName(packageInfo.loadLabel(getPackageManager()).toString());
-
                 apps.add(currentApp);
             }
         }

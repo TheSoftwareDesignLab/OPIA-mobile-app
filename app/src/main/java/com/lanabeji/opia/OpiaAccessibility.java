@@ -2,13 +2,12 @@ package com.lanabeji.opia;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.app.Service;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
-import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -21,25 +20,40 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 
 public class OpiaAccessibility extends AccessibilityService {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static String events = "events";
+    private static String[] labels = new String[]{"packageName", "className", "elementId", "text", "childCount", "contentDescription", "isClickable", "deviceId", "executionTime", "eventType", "eventTime"};
     private String executionTime = String.valueOf(String.valueOf(System.currentTimeMillis()));
-    String device = String.valueOf(UUID.randomUUID());
+    String device = MainActivity.DEVICE;
 
     FrameLayout mLayout;
     Button powerButton;
+    ArrayList<String> texts = new ArrayList<>();
+    ArrayList<String> ids = new ArrayList<>();
 
     public OpiaAccessibility() {
     }
@@ -56,46 +70,85 @@ public class OpiaAccessibility extends AccessibilityService {
 
         info.eventTypes = AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED |
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED | AccessibilityEvent.TYPE_VIEW_CLICKED
-                | AccessibilityEvent.TYPE_VIEW_SCROLLED;
+                | AccessibilityEvent.TYPE_VIEW_SCROLLED | AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
 
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
         info.notificationTimeout = 1000;
 
-        info.flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS | AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS;
+        info.flags = AccessibilityServiceInfo.FLAG_ENABLE_ACCESSIBILITY_VOLUME | AccessibilityServiceInfo.FLAG_REQUEST_FINGERPRINT_GESTURES | AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
+
         setServiceInfo(info);
 
         configureStopButton();
     }
+
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
         SharedPreferences preferences = getSharedPreferences(MainActivity.APP, MODE_PRIVATE);
         String packageSelected = preferences.getString(MainActivity.PACKAGE, "com.whatsapp");
+        boolean isRecording = preferences.getBoolean(AppListAdapter.RECORDING, true);
+
 
         if (String.valueOf(event.getPackageName()).equals(packageSelected)){
 
-            powerButton.setVisibility(View.VISIBLE);
-            Log.d("ON EVENT", String.valueOf(event.getEventType()));
-            String timestampEvent = String.valueOf(System.currentTimeMillis());
+            if(isRecording){
+                powerButton.setVisibility(View.VISIBLE);
+                Log.d("ON EVENT", String.valueOf(event.getEventType()));
 
-            if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
-                handleTextEvent(event, packageSelected, timestampEvent);
-            }
-            else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
+                String timestampEvent = String.valueOf(System.currentTimeMillis());
+
+
+                if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+                    handleTextEvent(event.getSource(), timestampEvent);
+                }
+/*            else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
 
                 AccessibilityNodeInfo source = event.getSource();
                 if (source == null) {
                     return;
                 }
                 handleWindowEvent(source, timestampEvent);
+            }*/
+                else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED){
+
+                    AccessibilityNodeInfo source = event.getSource();
+                    if (source == null) {
+                        return;
+                    }
+                    handleWindowEvent(source, timestampEvent);
+                }
+                else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED ){
+                    event.getSource().refresh();
+                    handleClickEvent(event.getSource(), timestampEvent);
+                }
+                else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_SCROLLED){
+                    handleScrollEvent(event.getSource(), timestampEvent);
+                }
             }
-            else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED ){
-                event.getSource().refresh();
-                handleClickEvent(event.getSource(), timestampEvent);
-            }
-            else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_SCROLLED){
-                handleScrollEvent(event, timestampEvent);
+            else { // Replaying
+
+                //readEvent();
+
+                Collections.sort(texts);
+                Collections.sort(ids);
+
+                System.out.println(texts);
+                System.out.println(ids);
+
+                AccessibilityNodeInfo current = getRootInActiveWindow();
+                for(int i = 0; i < texts.size(); i++){
+                    String text = texts.get(i).split("//")[1];
+                    String id = ids.get(i).split("//")[1];
+                    List<AccessibilityNodeInfo> nodes = current.findAccessibilityNodeInfosByText(text);
+                    if(nodes.isEmpty()){
+                        List<AccessibilityNodeInfo> nodesIds = current.findAccessibilityNodeInfosByViewId(id);
+                        nodesIds.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }else{
+                        nodes.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+                }
             }
         }
     }
@@ -117,7 +170,7 @@ public class OpiaAccessibility extends AccessibilityService {
         for(int i = 0; i < packages.size(); i++){
             ApplicationInfo packageInfo = packages.get(i);
             Intent launchActivity = pm.getLaunchIntentForPackage(packageInfo.packageName);
-            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null){
+            if (!packageInfo.packageName.startsWith("com.android") && launchActivity != null && !packageInfo.packageName.equals("com.lanabeji.opia")){
                 apps[i] = packageInfo.packageName;
             }
         }
@@ -145,38 +198,37 @@ public class OpiaAccessibility extends AccessibilityService {
         powerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+
+                readEvent();
+                powerButton.setVisibility(View.INVISIBLE);
+                Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(dialogIntent);
             }
         });
     }
 
     // EVENT'S METHODS
 
-    private void handleTextEvent(AccessibilityEvent event, String packageSelected, String timestampEvent){
+    private void handleTextEvent(AccessibilityNodeInfo source, String timestampEvent){
+
+        String packageName = String.valueOf(source.getPackageName());
+        String className = String.valueOf(source.getClassName());
+        String elementId = source.getViewIdResourceName();
 
         String text = "";
-        if (!event.getSource().isPassword()) {
-            text = event.getSource().getText().toString();
+        if (!source.isPassword()) {
+            text = source.getText().toString();
         }
 
-        String elementId = event.getSource().getViewIdResourceName();
-        String className = String.valueOf(event.getSource().getClassName());
+        String childCount = String.valueOf(source.getChildCount());
+        String contentDescription = String.valueOf(source.getContentDescription());
+        String isClickable = String.valueOf(source.isClickable());
 
-        Log.d("TEXT_CHANGED", text);
+        String eventType = "text";
+        String[] values = new String[]{packageName, className, elementId, text, childCount, contentDescription, isClickable, device, executionTime, eventType};
 
-        Map<String, String> newEvent = new HashMap<>();
-        newEvent.put("package", packageSelected);
-        newEvent.put("device", device);
-        newEvent.put("executionTime", executionTime);
-        newEvent.put("eventType", "text");
-        newEvent.put("elementId", elementId);
-        newEvent.put("text", text);
-        newEvent.put("className", className);
-
-
-        writeEvent(newEvent, timestampEvent);
+        writeEvent(values, timestampEvent);
 
     }
 
@@ -186,28 +238,23 @@ public class OpiaAccessibility extends AccessibilityService {
         }
         if (("android.widget.TextView").equals(source.getClassName()) || ("android.widget.EditText")
                 .equals(source.getClassName())) {
-            String id = source.getViewIdResourceName();
 
-            String eventData = "id: " + id + ", text:" + source.getText();
-            String text = String.valueOf(source.getText());
-            String className = String.valueOf(source.getClassName());
             String timestampEvent = String.valueOf(System.currentTimeMillis());
-            String packageSelected = String.valueOf(source.getPackageName());
 
-            Log.d("ACTIVITY", eventData);
+            String packageName = String.valueOf(source.getPackageName());
+            String className = String.valueOf(source.getClassName());
+            String elementId = source.getViewIdResourceName();
+            String text = String.valueOf(source.getText());
 
-            Map<String, String> newEvent = new HashMap<>();
-            newEvent.put("package", packageSelected);
-            newEvent.put("device", device);
-            newEvent.put("executionTime", executionTime);
-            newEvent.put("eventType", "window");
-            newEvent.put("elementId", id);
-            newEvent.put("text", text);
-            newEvent.put("className", className);
-            newEvent.put("windowTime", timestampWindow);
+            String childCount = String.valueOf(source.getChildCount());
+            String contentDescription = String.valueOf(source.getContentDescription());
+            String isClickable = String.valueOf(source.isClickable());
 
-            writeEvent(newEvent, timestampEvent);
+            String eventType = "window";
+            String eventTime = timestampWindow;
+            String[] values = new String[]{packageName, className, elementId, text, childCount, contentDescription, isClickable, device, executionTime, eventType, eventTime};
 
+            writeEvent(values, timestampEvent);
         }
         for (int i = 0; i < source.getChildCount(); i++) {
             AccessibilityNodeInfo child = source.getChild(i);
@@ -224,73 +271,52 @@ public class OpiaAccessibility extends AccessibilityService {
             source.refresh();
         }
 
-        String text = "";
-        if (source.getText() != null){
-            text = source.getText().toString();
-        }
+        String timestampEvent = String.valueOf(System.currentTimeMillis());
 
-        String packageSelected = String.valueOf(source.getPackageName());
-        String elementId = source.getViewIdResourceName();
+        String packageName = String.valueOf(source.getPackageName());
         String className = String.valueOf(source.getClassName());
-        int childCount = source.getChildCount();
-        String timestampCurrentEvent = String.valueOf(System.currentTimeMillis());
-
-        Log.d("CLICKED", "en click");
-
-        Map<String, String> newEvent = new HashMap<>();
-        newEvent.put("package", packageSelected);
-        newEvent.put("device", device);
-        newEvent.put("executionTime", executionTime);
-        newEvent.put("eventType", "click");
-        newEvent.put("elementId", elementId);
-        newEvent.put("text", text);
-        newEvent.put("className", className);
-        newEvent.put("childCount", String.valueOf(childCount));
-        newEvent.put("clickTime", timestampClick);
-
-        writeEvent(newEvent, timestampCurrentEvent);
-
-        Log.d("ANTES DEL FOR", "F");
-        for (int i = 0; i < source.getChildCount(); i++) {
-
-            Log.d("DENTRO DEL FOR", "F");
-            AccessibilityNodeInfo child = source.getChild(i);
-            if (child != null) {
-                Log.d("DENTRO DEL IF","F");
-                handleClickEvent(child, timestampClick);
-                child.recycle();
-            }
-        }
-        Log.d("FUERA DEL FOR","F");
-    }
-
-    private void handleScrollEvent(AccessibilityEvent event, String timestampEvent){
-
-        AccessibilityNodeInfo source = event.getSource();
-
+        String elementId = source.getViewIdResourceName();
         String text = String.valueOf(source.getText());
-        String packageSelected = String.valueOf(event.getPackageName());
-        String elementId = source.getViewIdResourceName();
-        String className = String.valueOf(source.getClassName());
-        int scrollX = event.getScrollX();
-        int scrollY = event.getScrollY();
 
-        Log.d("SCROLLED", String.valueOf(event.getEventType()));
+        String childCount = String.valueOf(source.getChildCount());
+        String contentDescription = String.valueOf(source.getContentDescription());
+        String isClickable = String.valueOf(source.isClickable());
 
-        Map<String, String> newEvent = new HashMap<>();
-        newEvent.put("package", packageSelected);
-        newEvent.put("device", device);
-        newEvent.put("executionTime", executionTime);
-        newEvent.put("eventType", "scroll");
-        newEvent.put("elementId", elementId);
-        newEvent.put("text", text);
-        newEvent.put("className", className);
-        newEvent.put("scroll", ""+scrollX+"/"+scrollY);
+        String eventType = "click";
+        String eventTime = timestampClick;
+        String[] values = new String[]{packageName, className, elementId, text, childCount, contentDescription, isClickable, device, executionTime, eventType, eventTime};
 
-        writeEvent(newEvent, timestampEvent);
+        writeEvent(values, timestampEvent);
+        writeEventDevice(timestampEvent, eventType);
     }
 
-    private void writeEvent(Map<String,String> newEvent, String timestampEvent){
+
+    private void handleScrollEvent(AccessibilityNodeInfo source, String timestampEvent){
+
+        String packageName = String.valueOf(source.getPackageName());
+        String className = String.valueOf(source.getClassName());
+        String elementId = source.getViewIdResourceName();
+        String text = String.valueOf(source.getText());
+
+        String childCount = String.valueOf(source.getChildCount());
+        String contentDescription = String.valueOf(source.getContentDescription());
+        String isClickable = String.valueOf(source.isClickable());
+
+        String eventType = "scroll";
+        String[] values = new String[]{packageName, className, elementId, text, childCount, contentDescription, isClickable, device, executionTime, eventType};
+
+        writeEvent(values, timestampEvent);
+        writeEventDevice(timestampEvent, eventType);
+    }
+
+    private void writeEvent(String[] values, String timestampEvent){
+
+
+        Map<String, String> newEvent = new HashMap<>();
+
+        for(int i = 0; i < values.length; i++){
+            newEvent.put(labels[i], values[i]);
+        }
 
         // Add a new document with timestamp as id
         db.collection(events).document(timestampEvent).set(newEvent).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -307,22 +333,57 @@ public class OpiaAccessibility extends AccessibilityService {
                 });
     }
 
+    private void writeEventDevice(String eventId, String eventType){
 
-    private void takeScreenshot(String number){
-        try{
-            String command = "adb shell screencap /sdcard/" + number + ".png";
-            Runtime.getRuntime().exec(command);
-        }
-        catch(Exception e){
-            Log.d("ERROR", "Couldn't take screenshot");
-            Log.d("ERROR", e.getStackTrace().toString());
-        }
+        Map<String, String> event = new HashMap<>();
+        event.put(eventId, eventType);
 
+        db.collection(device).document(executionTime)
+                .set(event, SetOptions.merge());
     }
 
+    private void readEvent(){
 
+        Query first = db.collection(device)
+                .limit(1);
 
+        first.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot documentSnapshots) {
 
+                        // Get the last visible document
+                        DocumentSnapshot lastVisible = documentSnapshots.getDocuments()
+                                .get(documentSnapshots.size() -1);
 
+                        ArrayList<String> sortedKeys =
+                                new ArrayList<String>(lastVisible.getData().keySet());
 
+                        Collections.sort(sortedKeys);
+
+                        for(int i = 0; i < sortedKeys.size(); i++){
+
+                            DocumentReference docRef = db.collection(events).document(sortedKeys.get(i));
+
+                            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot document = task.getResult();
+                                        if (document.exists()) {
+
+                                            texts.add(document.getId()+"//"+document.get(labels[3]));
+                                            ids.add(document.getId()+"//"+document.get(labels[2]));
+                                        } else {
+                                            Log.d("NO DOCUMENT", "No such document");
+                                        }
+                                    } else {
+                                        Log.d("FAILURE READING", "get failed with ", task.getException());
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+    }
 }

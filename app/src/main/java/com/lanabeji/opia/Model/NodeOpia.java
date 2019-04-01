@@ -1,6 +1,5 @@
 package com.lanabeji.opia.Model;
 
-import android.graphics.Rect;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.text.TextUtils;
 
@@ -10,7 +9,7 @@ import java.util.List;
  * Created by lanabeji on 30/03/19.
  */
 
-public class Node {
+public class NodeOpia {
 
     private CharSequence packageName;
     private CharSequence className;
@@ -18,17 +17,17 @@ public class Node {
     private CharSequence contentDescription;
     private String id;
     private int childCount;
-    private List<AccessibilityNodeInfoCompat.AccessibilityActionCompat> actionList;
 
-    public Node(CharSequence packageName, CharSequence className, CharSequence text, CharSequence contentDescription, String id, int childCount, List<AccessibilityNodeInfoCompat.AccessibilityActionCompat> actionList) {
+    public NodeOpia(CharSequence packageName, CharSequence className, CharSequence text, CharSequence contentDescription, String id, int childCount) {
         this.packageName = packageName;
         this.className = className;
         this.text = text;
         this.contentDescription = contentDescription;
         this.id = id;
         this.childCount = childCount;
-        this.actionList = actionList;
     }
+
+
 
     public CharSequence getPackageName() {
         return packageName;
@@ -78,23 +77,15 @@ public class Node {
         this.childCount = childCount;
     }
 
-    public List<AccessibilityNodeInfoCompat.AccessibilityActionCompat> getActionList() {
-        return actionList;
-    }
 
-    public void setActionList(List<AccessibilityNodeInfoCompat.AccessibilityActionCompat> actionList) {
-        this.actionList = actionList;
-    }
-
-    public boolean equals(Node other){
+    public boolean equals(NodeOpia other){
         boolean pack = TextUtils.equals(packageName,other.getPackageName());
         boolean cl = TextUtils.equals(className, other.getClassName());
-        boolean txt = TextUtils.equals(text, other.getText());
+        boolean txt = text == other.getText();
         boolean cont = TextUtils.equals(contentDescription, other.getContentDescription());
-        boolean i = id.equals(other.getId());
+        boolean i = id == other.getId();
         boolean count = childCount == other.getChildCount();
-        boolean action = actionList.equals(other.getActionList());
 
-        return pack && cl && txt && cont && i && count && action;
+        return pack && cl && txt && cont && i && count;
     }
 }
