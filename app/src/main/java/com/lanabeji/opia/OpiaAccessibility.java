@@ -8,8 +8,11 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.os.Build;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -49,6 +52,7 @@ public class OpiaAccessibility extends AccessibilityService {
     private static String[] labels = new String[]{"packageName", "className", "elementId", "text", "childCount", "contentDescription", "isClickable", "deviceId", "executionTime", "eventType", "eventTime"};
     private String executionTime = String.valueOf(String.valueOf(System.currentTimeMillis()));
     String device = MainActivity.DEVICE;
+    boolean test = false;
 
     FrameLayout mLayout;
     Button powerButton;
@@ -98,7 +102,7 @@ public class OpiaAccessibility extends AccessibilityService {
                 Log.d("ON EVENT", String.valueOf(event.getEventType()));
 
                 String timestampEvent = String.valueOf(System.currentTimeMillis());
-
+                //List<AccessibilityNodeInfo> encontrado = getRootInActiveWindow().findAccessibilityNodeInfosByText("+57 319 367197");
 
                 if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
                     handleTextEvent(event.getSource(), timestampEvent);
@@ -117,10 +121,19 @@ public class OpiaAccessibility extends AccessibilityService {
                     if (source == null) {
                         return;
                     }
+
+/*                    if(test){
+                        //readAllNodes(source);
+                        findNodeText("Trabajo", getRootInActiveWindow());
+                    }*/
+
+
                     handleWindowEvent(source, timestampEvent);
                 }
                 else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED ){
                     event.getSource().refresh();
+                    //test = true;
+                    //readAllNodes(event.getSource());
                     handleClickEvent(event.getSource(), timestampEvent);
                 }
                 else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_SCROLLED){
@@ -128,8 +141,6 @@ public class OpiaAccessibility extends AccessibilityService {
                 }
             }
             else { // Replaying
-
-                //readEvent();
 
                 Collections.sort(texts);
                 Collections.sort(ids);
@@ -141,14 +152,16 @@ public class OpiaAccessibility extends AccessibilityService {
                 for(int i = 0; i < texts.size(); i++){
                     String text = texts.get(i).split("//")[1];
                     String id = ids.get(i).split("//")[1];
-                    List<AccessibilityNodeInfo> nodes = current.findAccessibilityNodeInfosByText(text);
-                    if(nodes.isEmpty()){
-                        List<AccessibilityNodeInfo> nodesIds = current.findAccessibilityNodeInfosByViewId(id);
-                        nodesIds.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    }else{
-                        nodes.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
+
+                    AccessibilityNodeInfo found = findNodeText(text, getRootInActiveWindow());
+                    if(found != null){
+                        found.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        //found.setText(); PARA LAS DE TEXTO
+                        //found.performAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD); 8192 PARA SABER HACIA DONDE FUE EL SCROLL
+                        //found.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD); 4096 PARA SABER HACIA DONDE FUE EL SCROLL
                     }
                 }
+                //Sigue repitiendo las acciones
             }
         }
     }
@@ -332,6 +345,68 @@ public class OpiaAccessibility extends AccessibilityService {
                     }
                 });
     }
+
+
+    private void readAllNodes(AccessibilityNodeInfo source){
+
+        AccessibilityNodeInfo labeledBy = source.getLabeledBy();
+        AccessibilityNodeInfo labeledFor = source.getLabelFor();
+
+        if(source.getChildCount() == 0){
+            System.out.println("ID HIJO: "+source.getViewIdResourceName()+" TEXT "+ source.getText());
+        }
+        else{
+            for(int i = 0; i < source.getChildCount(); i++){
+                source.refresh();
+                source.performAction(AccessibilityNodeInfo.ACTION_SELECT);
+                AccessibilityNodeInfo hijo = source.getChild(i);
+                readAllNodes(hijo);
+                hijo.recycle();
+            }
+        }
+    }
+
+    private AccessibilityNodeInfo findNodeId(String id, AccessibilityNodeInfo source){
+
+        AccessibilityNodeInfo ans = null;
+        if(source.getViewIdResourceName() != null && source.getViewIdResourceName().equals(id)){
+            ans = source;
+            return ans;
+        }
+        else{
+            if(source.getChildCount() > 0){
+                for(int i = 0; i < source.getChildCount(); i++){
+                    if(findNodeId(id, source.getChild(i)) !=null){
+                        return findNodeId(id, source.getChild(i));
+                    }
+                }
+            }
+        }
+
+        return ans;
+    }
+
+    private AccessibilityNodeInfo findNodeText(String text, AccessibilityNodeInfo source){
+
+        AccessibilityNodeInfo ans = null;
+        if(source.getText() != null && source.getText().equals(text)){
+            ans = source;
+            return ans;
+        }
+        else{
+            if(source.getChildCount() > 0){
+                //source.
+                for(int i = 0; i < source.getChildCount(); i++){
+                    if(findNodeText(text, source.getChild(i)) !=null){
+                        return findNodeText(text, source.getChild(i));
+                    }
+                }
+            }
+        }
+
+        return ans;
+    }
+
 
     private void writeEventDevice(String eventId, String eventType){
 
