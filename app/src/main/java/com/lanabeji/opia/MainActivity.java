@@ -2,15 +2,19 @@ package com.lanabeji.opia;
 
 import android.*;
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 
@@ -33,10 +37,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE); //will hide the title
         getSupportActionBar().hide(); // hide the title bar
-        setContentView(R.layout.activity_main);
+;        setContentView(R.layout.activity_main);
         context = this;
         sharedPref = context.getSharedPreferences(APP, Context.MODE_PRIVATE);
         askPermission();
+/*        try {
+            getActivityList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 
     public void start(View v)
@@ -57,7 +66,19 @@ public class MainActivity extends AppCompatActivity {
         Log.d("EXTERNAL",context.getExternalFilesDirs(null).toString());
     }
 
+    public ActivityInfo[] getActivityList() throws Exception {
+        PackageManager pm = this.getPackageManager();
 
+        PackageInfo info = pm.getPackageInfo("com.ppg.spunky_java", PackageManager.GET_ACTIVITIES);
+
+        ActivityInfo[] list = info.activities;
+
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.ppg.spunky_java", "com.ppg.spunky_java.ElegirJuegoActivity"));
+        startActivity(intent);
+
+        return list;
+    }
 
 
 }
