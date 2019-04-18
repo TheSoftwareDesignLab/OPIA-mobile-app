@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lanabeji.opia">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +15,6 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -34,7 +33,12 @@
                 android:resource="@xml/service_config" />
         </service>
 
-        <activity android:name=".ListActivity"></activity>
+        <activity
+            android:name=".ListActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name=".AppDetailActivity"
+            android:parentActivityName=".ListActivity"></activity>
     </application>
 
 </manifest>

@@ -46,16 +46,17 @@ import java.util.Map;
 public class OpiaAccessibility extends AccessibilityService {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private static String events = "events";
-    private static String[] labels = new String[]{"packageName", "className", "elementId", "text", "bounds", "childCount", "contentDescription", "isClickable", "deviceId", "executionTime", "eventType", "eventTime"};
+    public static String events = "events";
+    public static String[] labels = new String[]{"packageName", "className", "elementId", "text", "bounds", "childCount", "contentDescription", "isClickable", "deviceId", "executionTime", "eventType", "eventTime"};
     private String executionTime = String.valueOf(String.valueOf(System.currentTimeMillis()));
     String device = MainActivity.DEVICE;
     boolean isInsideApp = false;
-    boolean oneTime = false;
+    static boolean oneTime = false;
+    String packageSelected = "";
 
     FrameLayout mLayout;
     Button powerButton;
-    ArrayList<String> seqEvents = new ArrayList<>();
+    public static ArrayList<String> seqEvents = new ArrayList<>();
 
     public OpiaAccessibility() {
     }
@@ -93,7 +94,7 @@ public class OpiaAccessibility extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
         SharedPreferences preferences = getSharedPreferences(MainActivity.APP, MODE_PRIVATE);
-        String packageSelected = preferences.getString(MainActivity.PACKAGE, "com.whatsapp");
+        packageSelected = preferences.getString(MainActivity.PACKAGE, "com.whatsapp");
         boolean isRecording = preferences.getBoolean(AppListAdapter.RECORDING, true);
 
         isInsideApp = false;
@@ -101,6 +102,10 @@ public class OpiaAccessibility extends AccessibilityService {
         if (String.valueOf(event.getPackageName()).equals(packageSelected)){
 
             isInsideApp = true;
+
+            if(executionTime.equals("EMPTY")){
+                executionTime = String.valueOf(String.valueOf(System.currentTimeMillis()));
+            }
 
             if(isRecording){
                 powerButton.setVisibility(View.VISIBLE);
@@ -111,23 +116,6 @@ public class OpiaAccessibility extends AccessibilityService {
                 if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
                     handleTextEvent(event.getSource(), timestampEvent);
                 }
-/*            else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
-
-                AccessibilityNodeInfo source = event.getSource();
-                if (source == null) {
-                    return;
-                }
-                handleWindowEvent(source, timestampEvent);
-            }*/
-/*                else if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED){
-
-                    AccessibilityNodeInfo source = event.getSource();
-                    if (source == null) {
-                        return;
-                    }
-
-                    handleWindowEvent(source, timestampEvent);
-                }*/
                 else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED ){
                     event.getSource().refresh();
                     handleClickEvent(event.getSource(), timestampEvent);
@@ -208,7 +196,8 @@ public class OpiaAccessibility extends AccessibilityService {
             @Override
             public void onClick(View view) {
 
-                readEvent();
+                writeEventDevice("packageName", packageSelected);
+                executionTime = "EMPTY";
                 powerButton.setVisibility(View.INVISIBLE);
                 Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
                 dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -231,7 +220,6 @@ public class OpiaAccessibility extends AccessibilityService {
         }
 
         Rect outBounds = new Rect();
-        //source.getBoundsInScreen(outBounds);
         source.getBoundsInParent(outBounds);
         String boundsInScreen = outBounds.toString();
 
@@ -261,7 +249,6 @@ public class OpiaAccessibility extends AccessibilityService {
             String text = String.valueOf(source.getText());
 
             Rect outBounds = new Rect();
-            //source.getBoundsInScreen(outBounds);
             source.getBoundsInParent(outBounds);
             String boundsInScreen = outBounds.toString();
 
@@ -292,7 +279,6 @@ public class OpiaAccessibility extends AccessibilityService {
 
         Rect outBounds = new Rect();
         source.getBoundsInParent(outBounds);
-        //source.getBoundsInScreen(outBounds);
 
         String timestampEvent = String.valueOf(System.currentTimeMillis());
 
@@ -323,7 +309,6 @@ public class OpiaAccessibility extends AccessibilityService {
         String text = String.valueOf(source.getText());
 
         Rect outBounds = new Rect();
-        //source.getBoundsInScreen(outBounds);
         source.getBoundsInParent(outBounds);
         String boundsInScreen = outBounds.toString();
 
@@ -395,7 +380,6 @@ public class OpiaAccessibility extends AccessibilityService {
         boolean srcTxt = String.valueOf(source.getText()).equals(text);
 
         Rect b = new Rect();
-        //source.getBoundsInScreen(b);
         source.getBoundsInParent(b);
 
         boolean srcBounds = b.toString().equals(bounds);
@@ -425,7 +409,6 @@ public class OpiaAccessibility extends AccessibilityService {
         AccessibilityNodeInfo ans = null;
 
         Rect b = new Rect();
-        //source.getBoundsInScreen(b);
         source.getBoundsInParent(b);
 
         boolean srcBounds = b.toString().equals(bounds);
@@ -455,7 +438,6 @@ public class OpiaAccessibility extends AccessibilityService {
         AccessibilityNodeInfo ans = null;
 
         Rect b = new Rect();
-        //source.getBoundsInScreen(b);
         source.getBoundsInParent(b);
         boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
 
@@ -486,6 +468,10 @@ public class OpiaAccessibility extends AccessibilityService {
 
         db.collection(device).document(executionTime)
                 .set(event, SetOptions.merge());
+    }
+
+    public static void replaceSeqEvents(ArrayList<String> newSeq){
+        seqEvents = newSeq;
     }
 
     private void replayEvents(){
@@ -534,8 +520,6 @@ public class OpiaAccessibility extends AccessibilityService {
 
                     System.out.println("SCROLL");
 
-
-                    //found = findNode(text, bounds, classname, getRootInActiveWindow());
                     found = findNodeScroll(classname, getRootInActiveWindow());
 
                     if(found != null){
@@ -577,6 +561,14 @@ public class OpiaAccessibility extends AccessibilityService {
                     break;
             }
         }
+
+        Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(dialogIntent);
+    }
+
+    public static void changeOneTime(){
+        oneTime = false;
     }
 
     private void executeKeyevent(int code){
@@ -605,52 +597,5 @@ public class OpiaAccessibility extends AccessibilityService {
             default:
                 break;
         }
-    }
-
-    private void readEvent(){
-
-        Query first = db.collection(device)
-                .limit(1);
-
-        first.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot documentSnapshots) {
-
-                        // Get the last visible document
-                        DocumentSnapshot lastVisible = documentSnapshots.getDocuments()
-                                .get(documentSnapshots.size() -1);
-
-                        ArrayList<String> sortedKeys =
-                                new ArrayList<String>(lastVisible.getData().keySet());
-
-                        Collections.sort(sortedKeys);
-
-                        for(int i = 0; i < sortedKeys.size(); i++){
-
-                            DocumentReference docRef = db.collection(events).document(sortedKeys.get(i));
-
-                            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        DocumentSnapshot document = task.getResult();
-                                        if (document.exists()) {
-
-                                            //classname, elementid, text, bounds,eventtype, code
-                                            String event = document.getId()+"//"+document.get(labels[1])+"//"+document.get(labels[2])+"//"+document.get(labels[3])+"//"+document.get(labels[4])+"//"+document.get(labels[10])+"//"+document.get("code");
-                                            seqEvents.add(event);
-
-                                        } else {
-                                            Log.d("NO DOCUMENT", "No such document");
-                                        }
-                                    } else {
-                                        Log.d("FAILURE READING", "get failed with ", task.getException());
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
     }
 }

@@ -40,12 +40,7 @@ public class MainActivity extends AppCompatActivity {
 ;        setContentView(R.layout.activity_main);
         context = this;
         sharedPref = context.getSharedPreferences(APP, Context.MODE_PRIVATE);
-        askPermission();
-/*        try {
-            getActivityList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
+        //askPermission();
     }
 
     public void start(View v)

@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">opia</string>
     <string name="stop">S</string>
+    <string name="record">Record</string>
+    <string name="previous_records">Previous records</string>
+    <string name="testing">Testing</string>
+    <string name="test_integrity">Test integrity</string>
 </resources>
