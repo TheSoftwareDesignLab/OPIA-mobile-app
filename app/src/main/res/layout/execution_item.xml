@@ -18,6 +18,16 @@
         android:textColor="@color/colorPrimary" />
 
     <Button
+        android:id="@+id/injectionButton"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/injection"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:textSize="10sp" />
+
+    <Button
         android:id="@+id/playButton"
         android:layout_width="25dp"
         android:layout_height="25dp"

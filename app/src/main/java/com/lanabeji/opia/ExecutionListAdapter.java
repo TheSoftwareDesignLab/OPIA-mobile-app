@@ -76,10 +76,9 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
 
     @Override
     public void onBindViewHolder(ExecutionListAdapter.ViewHolder viewHolder, int position) {
-        // Get the data model based on position
         final String current = mExecutions.get(position);
+        OpiaAccessibility.changeInjection("");
 
-        // Set item views based on your views and data model
         TextView textView = viewHolder.executionName;
 
         long stamp = Long.parseLong(current);
@@ -92,7 +91,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
 
                 readEvent(current);
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -100,6 +99,28 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
                 writeSelected(packageSelected, false);
                 OpiaAccessibility.replaceSeqEvents(seqEvents);
                 OpiaAccessibility.changeOneTime();
+                Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
+                if (launchIntent != null) {
+                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(launchIntent);
+                }
+            }
+        });
+
+        viewHolder.injectionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                readEvent(current);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                writeSelected(packageSelected, false);
+                OpiaAccessibility.replaceSeqEvents(seqEvents);
+                OpiaAccessibility.changeOneTime();
+                OpiaAccessibility.changeInjection("injection");
                 Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
                 if (launchIntent != null) {
                     launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -182,12 +203,14 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView executionName;
         public Button replayButton;
+        public Button injectionButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
             executionName = (TextView) itemView.findViewById(R.id.executionTime);
             replayButton = (Button) itemView.findViewById(R.id.playButton);
+            injectionButton = (Button) itemView.findViewById(R.id.injectionButton);
         }
     }
 
