@@ -75,41 +75,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
                 intent.putExtra(AppDetailActivity.APP_IMAGE, b);
                 intent.putExtra(AppDetailActivity.APP_PACKAGE, appItem.getPackageName());
                 context.startActivity(intent);
-
-               /* AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                String message = "Do you want to select " + appItem.getName() + "?";
-                builder.setMessage(message);
-                builder.setPositiveButton("Record", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User clicked Record button
-                        Log.d("Record", "USER CLICKED RECORD");
-
-                        writeSelected(appItem.getPackageName(), true);
-
-
-*//*                        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appItem.getPackageName());
-                        if (launchIntent != null) {
-                            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            context.startActivity(launchIntent);
-                        }*//*
-                    }
-                });
-                builder.setNeutralButton("Replay", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User clicked Replay button
-                        Log.d("Replay", "USER CLICKED Replay");
-
-                        writeSelected(appItem.getPackageName(), false);
-                        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(appItem.getPackageName());
-                        if (launchIntent != null) {
-                            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            context.startActivity(launchIntent);
-                        }
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();*/
             }
         });
     }

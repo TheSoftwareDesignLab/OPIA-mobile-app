@@ -3,6 +3,7 @@ package com.lanabeji.opia;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -10,13 +11,16 @@ import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.IntentCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -27,20 +31,29 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.squareup.okhttp.internal.http.StatusLine;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 public class OpiaAccessibility extends AccessibilityService {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public static String INJECTION_TAG = "INJECTION";
     public static String events = "events";
     public static String injectionEvents = "injectionEvents";
     public static String[] labels = new String[]{"packageName", "className", "elementId", "text", "bounds", "childCount", "contentDescription", "isClickable", "deviceId", "executionTime", "eventType", "eventTime"};
@@ -49,7 +62,10 @@ public class OpiaAccessibility extends AccessibilityService {
     boolean isInsideApp = false;
     static boolean oneTime = false;
     static String injection = "";
+    static int counterInjection = 1;
+    static ArrayList<String> injectionStrings = new ArrayList<>();
     String packageSelected = "";
+    Random rand = new Random();
 
     FrameLayout mLayout;
     Button powerButton;
@@ -114,6 +130,7 @@ public class OpiaAccessibility extends AccessibilityService {
                     handleTextEvent(event.getSource(), timestampEvent);
                 }
                 else if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED ){
+
                     event.getSource().refresh();
                     handleClickEvent(event.getSource(), timestampEvent);
                 }
@@ -399,35 +416,37 @@ public class OpiaAccessibility extends AccessibilityService {
 
     private AccessibilityNodeInfo findNode(String text, String bounds, String classname, AccessibilityNodeInfo source){
 
-        source.refresh();
         AccessibilityNodeInfo ans = null;
-        boolean srcTxt = String.valueOf(source.getText()).equals(text);
+        if(source != null) {
+            source.refresh();
 
-        Rect outBoundsParent = new Rect();
-        source.getBoundsInParent(outBoundsParent);
-        String boundsInParent = outBoundsParent.toString();
+            boolean srcTxt = String.valueOf(source.getText()).equals(text);
 
-        Rect outBoundsScreen = new Rect();
-        source.getBoundsInScreen(outBoundsScreen);
-        String boundsInScreen = outBoundsScreen.toString();
+            Rect outBoundsParent = new Rect();
+            source.getBoundsInParent(outBoundsParent);
+            String boundsInParent = outBoundsParent.toString();
 
-        String boundsCurrent = boundsInParent + "!!"+ boundsInScreen;
+            Rect outBoundsScreen = new Rect();
+            source.getBoundsInScreen(outBoundsScreen);
+            String boundsInScreen = outBoundsScreen.toString();
 
-        boolean srcBounds = boundsCurrent.equals(bounds);
-        boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
+            String boundsCurrent = boundsInParent + "!!" + boundsInScreen;
 
-        if(srcTxt && srcBounds && srcClass){
-            ans = source;
-            return ans;
-        }
-        else{
-            if(source.getChildCount() > 0){
-                for(int i = 0; i < source.getChildCount(); i++){
-                    AccessibilityNodeInfo child = source.getChild(i);
-                    if(findNode(text, bounds, classname, child) !=null){
-                        return findNode(text, bounds, classname, source.getChild(i));
+            boolean srcBounds = boundsCurrent.equals(bounds);
+            boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
+
+            if (srcTxt && srcBounds && srcClass) {
+                ans = source;
+                return ans;
+            } else {
+                if (source.getChildCount() > 0) {
+                    for (int i = 0; i < source.getChildCount(); i++) {
+                        AccessibilityNodeInfo child = source.getChild(i);
+                        if (findNode(text, bounds, classname, child) != null) {
+                            return findNode(text, bounds, classname, source.getChild(i));
+                        }
+                        child.recycle();
                     }
-                    child.recycle();
                 }
             }
         }
@@ -438,32 +457,33 @@ public class OpiaAccessibility extends AccessibilityService {
     private AccessibilityNodeInfo findNode(String bounds, String classname, AccessibilityNodeInfo source){
 
         AccessibilityNodeInfo ans = null;
+        if(source != null) {
 
-        Rect outBoundsParent = new Rect();
-        source.getBoundsInParent(outBoundsParent);
-        String boundsInParent = outBoundsParent.toString();
+            Rect outBoundsParent = new Rect();
+            source.getBoundsInParent(outBoundsParent);
+            String boundsInParent = outBoundsParent.toString();
 
-        Rect outBoundsScreen = new Rect();
-        source.getBoundsInScreen(outBoundsScreen);
-        String boundsInScreen = outBoundsScreen.toString();
+            Rect outBoundsScreen = new Rect();
+            source.getBoundsInScreen(outBoundsScreen);
+            String boundsInScreen = outBoundsScreen.toString();
 
-        String boundsCurrent = boundsInParent + "!!"+ boundsInScreen;
+            String boundsCurrent = boundsInParent + "!!" + boundsInScreen;
 
-        boolean srcBounds = boundsCurrent.equals(bounds);
-        boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
+            boolean srcBounds = boundsCurrent.equals(bounds);
+            boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
 
-        if(srcBounds && srcClass){
-            ans = source;
-            return ans;
-        }
-        else{
-            if(source.getChildCount() > 0){
-                for(int i = 0; i < source.getChildCount(); i++){
-                    AccessibilityNodeInfo child = source.getChild(i);
-                    if(findNode(bounds, classname, source.getChild(i)) !=null){
-                        return findNode(bounds, classname, source.getChild(i));
+            if (srcBounds && srcClass) {
+                ans = source;
+                return ans;
+            } else {
+                if (source.getChildCount() > 0) {
+                    for (int i = 0; i < source.getChildCount(); i++) {
+                        AccessibilityNodeInfo child = source.getChild(i);
+                        if (findNode(bounds, classname, source.getChild(i)) != null) {
+                            return findNode(bounds, classname, source.getChild(i));
+                        }
+                        child.recycle();
                     }
-                    child.recycle();
                 }
             }
         }
@@ -475,22 +495,24 @@ public class OpiaAccessibility extends AccessibilityService {
 
         AccessibilityNodeInfo ans = null;
 
-        Rect b = new Rect();
-        source.getBoundsInParent(b);
-        boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
+        if(source != null) {
 
-        if(srcClass){
-            ans = source;
-            return ans;
-        }
-        else{
-            if(source.getChildCount() > 0){
-                for(int i = 0; i < source.getChildCount(); i++){
-                    AccessibilityNodeInfo child = source.getChild(i);
-                    if(findNodeScroll(classname, source.getChild(i)) !=null){
-                        return findNodeScroll(classname, source.getChild(i));
+            Rect b = new Rect();
+            source.getBoundsInParent(b);
+            boolean srcClass = String.valueOf(source.getClassName()).equals(classname);
+
+            if (srcClass) {
+                ans = source;
+                return ans;
+            } else {
+                if (source.getChildCount() > 0) {
+                    for (int i = 0; i < source.getChildCount(); i++) {
+                        AccessibilityNodeInfo child = source.getChild(i);
+                        if (findNodeScroll(classname, source.getChild(i)) != null) {
+                            return findNodeScroll(classname, source.getChild(i));
+                        }
+                        child.recycle();
                     }
-                    child.recycle();
                 }
             }
         }
@@ -508,10 +530,9 @@ public class OpiaAccessibility extends AccessibilityService {
                 .set(event, SetOptions.merge());
     }
 
-    private void writeInjectionEvent(String eventId, String log, String nodeInfo){
+    private void writeInjectionEvent(String eventId, String nodeInfo){
 
         Map<String, String> event = new HashMap<>();
-        event.put("log", log);
         event.put("nodeInfo", nodeInfo);
 
         db.collection(injectionEvents).document(eventId).set(event).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -537,16 +558,49 @@ public class OpiaAccessibility extends AccessibilityService {
         oneTime = true;
         Collections.sort(seqEvents);
 
+        if(injection.equals("")){
+            replaySeq();
+        }
+        else{
+            while(counterInjection > 0){
+                if(counterInjection != 3){
+                    Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageSelected);
+                    if (launchIntent != null) {
+                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                        startActivity(launchIntent);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else{
+                   //no hace nada porque es la primera vez que abre la app;
+                }
+                replaySeq();
+                counterInjection--;
+            }
+            injection = "";
+            Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(dialogIntent);
+        }
+
+    }
+
+    public void replaySeq(){
+
         String classname = "";
         String id = "";
         String text = "";
         String bounds = "";
         String eventType = "";
         String code = "";
-
         AccessibilityNodeInfo found;
+        String urlServer = getSharedPreferences(MainActivity.APP, MODE_PRIVATE).getString(MainActivity.SERVER, "http://localhost:5000");
 
-        for(int i = 0; i < seqEvents.size(); i++){
+        for (int i = 0; i < seqEvents.size(); i++) {
 
             //id, classname, elementid, text, bounds, eventtype, code
             String[] event = seqEvents.get(i).split("//");
@@ -557,7 +611,7 @@ public class OpiaAccessibility extends AccessibilityService {
             eventType = event[5];
             code = event[6];
 
-            switch (eventType){
+            switch (eventType) {
 
                 case "click":
 
@@ -565,7 +619,7 @@ public class OpiaAccessibility extends AccessibilityService {
 
                     found = findNode(text, bounds, classname, getRootInActiveWindow());
 
-                    if(found != null){
+                    if (found != null) {
                         found.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                         try {
                             Thread.sleep(700);
@@ -573,6 +627,7 @@ public class OpiaAccessibility extends AccessibilityService {
                             e.printStackTrace();
                         }
                     }
+                    new ADBCommand().execute(urlServer+"/log/"+packageSelected);
                     break;
                 case "scroll":
 
@@ -580,7 +635,7 @@ public class OpiaAccessibility extends AccessibilityService {
 
                     found = findNodeScroll(classname, getRootInActiveWindow());
 
-                    if(found != null){
+                    if (found != null) {
                         found.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
                         try {
                             Thread.sleep(700);
@@ -593,35 +648,34 @@ public class OpiaAccessibility extends AccessibilityService {
 
                     found = findNode(bounds, classname, getRootInActiveWindow());
 
-                    if(found != null){
+                    if (found != null) {
 
-                        if(!injection.equals("")){
-                            text = "' OR '1'='1";
-                            //cleans the log, so you can see the real change after writing
-                            //clearLog();
+                        if (!injection.equals("")) {
+
+                            int n = rand.nextInt(injectionStrings.size());
+                            text = injectionStrings.get(n);
                         }
 
                         Bundle arguments = new Bundle();
                         arguments.putCharSequence(AccessibilityNodeInfo
                                 .ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
+
                         found.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
 
                         try {
                             Thread.sleep(700);
 
-                            if(!injection.equals("")){
+                            if (!injection.equals("")) {
                                 String eventId = String.valueOf(System.currentTimeMillis());
-                                String log = getLog();
                                 String nodeInfo = seqEvents.get(i);
-
-                                writeInjectionEvent(eventId, log, nodeInfo);
+                                writeInjectionEvent(eventId, nodeInfo);
                             }
 
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-
+                    new ADBCommand().execute(urlServer+"/log/"+packageSelected);
                     break;
                 case "keyevent":
                     int codeEvent = Integer.parseInt(code);
@@ -637,15 +691,40 @@ public class OpiaAccessibility extends AccessibilityService {
             }
         }
 
-        Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(dialogIntent);
+/*        if(!injection.equals("")){
+            try {
+                //String res = new ADBCommand().execute(urlServer+ "/stop/"+packageSelected).get();
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageSelected);
+                if (launchIntent != null) {
+                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                    startActivity(launchIntent);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }*/
+        if(injection.equals("")){
+            Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(dialogIntent);
+        }
+        else{
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
 
     public static void changeOneTime(){
         oneTime = false;
     }
-    public static void changeInjection(String inj){injection = inj;}
+    public static void changeInjection(String inj){injection = inj; counterInjection = 3;}
+    public static void changeInjectionStrings(ArrayList<String> strings){
+        injectionStrings = strings;
+    }
 
     private void executeKeyevent(int code){
         switch (code){
@@ -675,30 +754,69 @@ public class OpiaAccessibility extends AccessibilityService {
         }
     }
 
-    public void clearLog(){
-        try {
-            Process process = Runtime.getRuntime().exec("logcat -c");
+    public class ADBCommand extends AsyncTask<String , Void ,String> {
+        String server_response;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            System.out.println("EN PRE EXECUTE");
         }
-        catch (IOException e) {}
-    }
 
-    public String getLog(){
+        @Override
+        protected String doInBackground(String... strings) {
 
-        String ans = "";
-        try {
-            Process process = Runtime.getRuntime().exec("logcat -d");
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
+            URL url;
+            HttpURLConnection urlConnection = null;
 
-            StringBuilder log=new StringBuilder();
-            String line = "";
-            while ((line = bufferedReader.readLine()) != null) {
-                log.append(line);
+            try {
+                url = new URL(strings[0]);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                int responseCode = urlConnection.getResponseCode();
+
+                if(responseCode == HttpURLConnection.HTTP_OK){
+                    server_response = readStream(urlConnection.getInputStream());
+                }
+                else{
+                    Log.d("NO", "LEYOOOOO");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            ans = log.toString();
-        }
-        catch (IOException e) {}
 
-        return ans;
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Log.e("Response", "" + server_response);
+        }
     }
+
+
+    private String readStream(InputStream in) {
+        BufferedReader reader = null;
+        StringBuffer response = new StringBuffer();
+        try {
+            reader = new BufferedReader(new InputStreamReader(in));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return response.toString();
+    }
+
 }

@@ -22,6 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -110,22 +111,43 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         viewHolder.injectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                readEvent(current);
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+                if(sharedPref.contains(packageSelected+AppDetailActivity.TABLES)){
+
+                    String tables = sharedPref.getString(packageSelected+AppDetailActivity.TABLES, "[]");
+
+                    String[] listTables = tables.replace("[","").replace("]","").replace("\"","").split(", ");
+                    ArrayList<String> injectionStrings = new ArrayList<>();
+
+                    injectionStrings.add("' OR '1'='1;--");
+                    injectionStrings.add("0 OR '1'='1;--");
+                    injectionStrings.add(";");
+
+                    for(int i = 0; i < listTables.length; i++){
+                        injectionStrings.add("'; DROP TABLE "+ listTables[i]+";--");
+                        injectionStrings.add("0; DROP TABLE "+ listTables[i]+";--");
+                    }
+
+                    readEvent(current);
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    writeSelected(packageSelected, false);
+                    OpiaAccessibility.replaceSeqEvents(seqEvents);
+                    OpiaAccessibility.changeOneTime();
+                    OpiaAccessibility.changeInjection("injection");
+                    OpiaAccessibility.changeInjectionStrings(injectionStrings);
+                    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
+                    if (launchIntent != null) {
+                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        context.startActivity(launchIntent);
+                    }
+
                 }
 
-                writeSelected(packageSelected, false);
-                OpiaAccessibility.replaceSeqEvents(seqEvents);
-                OpiaAccessibility.changeOneTime();
-                OpiaAccessibility.changeInjection("injection");
-                Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    context.startActivity(launchIntent);
-                }
             }
         });
     }
