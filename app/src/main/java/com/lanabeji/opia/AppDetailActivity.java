@@ -104,12 +104,13 @@ public class AppDetailActivity extends AppCompatActivity {
         alert.setTitle("IP Address");
         alert.setMessage("Enter the IP address where the server is running");
         final EditText input = new EditText(this);
+        input.setText("157.253.221.149");
         alert.setView(input);
 
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
-                System.out.println(value);
+                //System.out.println(value);
                 String serverUrl = "http://"+value+":5000";
 
                 String url = serverUrl + "/app/" + packageSelected;

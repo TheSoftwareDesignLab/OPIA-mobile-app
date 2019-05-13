@@ -3,7 +3,6 @@ package com.lanabeji.opia;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -14,7 +13,6 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.IntentCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -31,16 +29,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.squareup.okhttp.internal.http.StatusLine;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 public class OpiaAccessibility extends AccessibilityService {
 
@@ -70,6 +62,9 @@ public class OpiaAccessibility extends AccessibilityService {
     FrameLayout mLayout;
     Button powerButton;
     public static ArrayList<String> seqEvents = new ArrayList<>();
+
+    boolean logBool = false;
+    String logAnswer = "Empty";
 
     public OpiaAccessibility() {
     }
@@ -557,26 +552,31 @@ public class OpiaAccessibility extends AccessibilityService {
 
         oneTime = true;
         Collections.sort(seqEvents);
+        String urlServer = getSharedPreferences(MainActivity.APP, MODE_PRIVATE).getString(MainActivity.SERVER, "http://localhost:5000");
+        new ADBCommand().execute(urlServer+"/clearvar/");
 
         if(injection.equals("")){
             replaySeq();
         }
         else{
             while(counterInjection > 0){
+
                 if(counterInjection != 3){
-                    Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageSelected);
-                    if (launchIntent != null) {
-                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                        startActivity(launchIntent);
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+
+                    if(logAnswer.equals("OK")){
+                        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageSelected);
+                        if (launchIntent != null) {
+                            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                            startActivity(launchIntent);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-                else{
-                   //no hace nada porque es la primera vez que abre la app;
+                    logAnswer = "Empty";
+                    logBool = false;
                 }
                 replaySeq();
                 counterInjection--;
@@ -590,6 +590,7 @@ public class OpiaAccessibility extends AccessibilityService {
     }
 
     public void replaySeq(){
+
 
         String classname = "";
         String id = "";
@@ -615,7 +616,7 @@ public class OpiaAccessibility extends AccessibilityService {
 
                 case "click":
 
-                    System.out.println("CLICK");
+                    //System.out.println("CLICK");
 
                     found = findNode(text, bounds, classname, getRootInActiveWindow());
 
@@ -627,11 +628,10 @@ public class OpiaAccessibility extends AccessibilityService {
                             e.printStackTrace();
                         }
                     }
-                    new ADBCommand().execute(urlServer+"/log/"+packageSelected);
                     break;
                 case "scroll":
 
-                    System.out.println("SCROLL");
+                    //System.out.println("SCROLL");
 
                     found = findNodeScroll(classname, getRootInActiveWindow());
 
@@ -664,18 +664,11 @@ public class OpiaAccessibility extends AccessibilityService {
 
                         try {
                             Thread.sleep(700);
-
-                            if (!injection.equals("")) {
-                                String eventId = String.valueOf(System.currentTimeMillis());
-                                String nodeInfo = seqEvents.get(i);
-                                writeInjectionEvent(eventId, nodeInfo);
-                            }
-
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                    new ADBCommand().execute(urlServer+"/log/"+packageSelected);
+
                     break;
                 case "keyevent":
                     int codeEvent = Integer.parseInt(code);
@@ -691,25 +684,25 @@ public class OpiaAccessibility extends AccessibilityService {
             }
         }
 
-/*        if(!injection.equals("")){
+        new ADBCommand().execute(urlServer+"/log/"+packageSelected);
+        while(!logBool){
+            //Espere a que llegue la respuesta
             try {
-                //String res = new ADBCommand().execute(urlServer+ "/stop/"+packageSelected).get();
-                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageSelected);
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                    startActivity(launchIntent);
-                }
-            } catch (Exception e) {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }*/
-        if(injection.equals("")){
+
+        }
+
+        new ADBCommand().execute(urlServer+"/clear/");
+        if(injection.equals("")){ //es solo replay, abra de una vez opia
             Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
             dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(dialogIntent);
         }
         else{
-            try {
+            try { //dele tiempito mientras abre la app
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -760,7 +753,7 @@ public class OpiaAccessibility extends AccessibilityService {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            System.out.println("EN PRE EXECUTE");
+            //System.out.println("EN PRE EXECUTE");
         }
 
         @Override
@@ -770,15 +763,28 @@ public class OpiaAccessibility extends AccessibilityService {
             HttpURLConnection urlConnection = null;
 
             try {
+
                 url = new URL(strings[0]);
                 urlConnection = (HttpURLConnection) url.openConnection();
                 int responseCode = urlConnection.getResponseCode();
 
-                if(responseCode == HttpURLConnection.HTTP_OK){
-                    server_response = readStream(urlConnection.getInputStream());
+                if(strings[0].contains("clear")){
+                    if(responseCode == HttpURLConnection.HTTP_OK){
+                        server_response = readStream(urlConnection.getInputStream());
+                    }
+                    else{
+                        Log.d("NO", "LIMPIO LOG");
+                    }
                 }
                 else{
-                    Log.d("NO", "LEYOOOOO");
+                    if(responseCode == HttpURLConnection.HTTP_OK){
+                        server_response = readStream(urlConnection.getInputStream());
+                        logAnswer = server_response;
+                        logBool = true;
+                    }
+                    else{
+                        Log.d("NO", "LEYOOOOO");
+                    }
                 }
 
             } catch (Exception e) {
