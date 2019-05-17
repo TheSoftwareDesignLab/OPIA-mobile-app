@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".Main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -22,7 +22,7 @@
         </activity>
 
         <service
-            android:name=".OpiaAccessibility"
+            android:name=".Service.OpiaAccessibility"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -36,11 +36,11 @@
         </service>
 
         <activity
-            android:name=".ListActivity"
-            android:parentActivityName=".MainActivity"/>
+            android:name=".AppList.ListActivity"
+            android:parentActivityName=".Main.MainActivity"/>
         <activity
-            android:name=".AppDetailActivity"
-            android:parentActivityName=".ListActivity"></activity>
+            android:name=".AppDetail.AppDetailActivity"
+            android:parentActivityName=".AppList.ListActivity"></activity>
     </application>
 
 </manifest>

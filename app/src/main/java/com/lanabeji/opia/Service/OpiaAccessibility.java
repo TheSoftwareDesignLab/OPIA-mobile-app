@@ -1,4 +1,4 @@
-package com.lanabeji.opia;
+package com.lanabeji.opia.Service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -18,7 +18,6 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -29,6 +28,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.lanabeji.opia.AppList.AppListAdapter;
+import com.lanabeji.opia.AppList.ListActivity;
+import com.lanabeji.opia.Main.MainActivity;
+import com.lanabeji.opia.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,34 +1,30 @@
-package com.lanabeji.opia;
+package com.lanabeji.opia.AppList;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.lanabeji.opia.AppDetail.AppDetailActivity;
+import com.lanabeji.opia.Main.MainActivity;
+import com.lanabeji.opia.R;
+
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by lanabeji on 17/03/19.
+ * Recycler view adapter to show installed apps
  */
 
 public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHolder> {
@@ -36,12 +32,16 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     List<AppItem> appList;
     Context context;
     SharedPreferences sharedPref;
+
+    //Name of variable to save in S.P when accessibility api is recording a sequence of events
     public final static String RECORDING = "IS_RECORDING";
 
     public AppListAdapter(List<AppItem>AppList)
     {
         this.appList = AppList;
     }
+
+    // ADAPTER METHODS
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -70,6 +70,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 byte[] b = baos.toByteArray();
 
+                //Start a detail activity, with information of the selected app
                 Intent intent = new Intent(context, AppDetailActivity.class);
                 intent.putExtra(AppDetailActivity.APP_NAME, appItem.getName());
                 intent.putExtra(AppDetailActivity.APP_IMAGE, b);
@@ -84,7 +85,13 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         return appList.size();
     }
 
-    public void writeSelected(String packageSelected, boolean isRecording){
+
+    // METHODS
+
+   /*
+   * Write in shared preferences the selected app to record and replay
+   */
+   public void writeSelected(String packageSelected, boolean isRecording){
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(MainActivity.PACKAGE, packageSelected);
         editor.putBoolean(RECORDING, isRecording);

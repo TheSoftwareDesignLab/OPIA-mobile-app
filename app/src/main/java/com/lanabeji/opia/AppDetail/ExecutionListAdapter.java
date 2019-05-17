@@ -1,9 +1,8 @@
-package com.lanabeji.opia;
+package com.lanabeji.opia.AppDetail;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,43 +13,40 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.lanabeji.opia.Main.MainActivity;
+import com.lanabeji.opia.Service.OpiaAccessibility;
+import com.lanabeji.opia.R;
 
-import java.lang.reflect.Array;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.lanabeji.opia.AppListAdapter.RECORDING;
-import static com.lanabeji.opia.OpiaAccessibility.events;
-import static com.lanabeji.opia.OpiaAccessibility.labels;
+import static com.lanabeji.opia.AppList.AppListAdapter.RECORDING;
+import static com.lanabeji.opia.Service.OpiaAccessibility.events;
+import static com.lanabeji.opia.Service.OpiaAccessibility.labels;
 
 /**
  * Created by lanabeji on 17/04/19.
+ * Recycler view adapter to show previous records
  */
 
 public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdapter.ViewHolder>{
 
-
     private List<String> mExecutions;
-    FirebaseFirestore db;
-    String device;
-    ArrayList<String> seqEvents;
-    Context context;
-    SharedPreferences sharedPref;
-    String packageSelected;
+    private FirebaseFirestore db;
+    private String device;
+    private ArrayList<String> seqEvents;
+    private Context context;
+    private SharedPreferences sharedPref;
+    private String packageSelected;
+    private String tables;
 
-    // Pass in the contact array into the constructor
     public ExecutionListAdapter(List<String> executions) {
         mExecutions = executions;
     }
@@ -69,6 +65,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         device = MainActivity.DEVICE;
         seqEvents = new ArrayList<>();
         packageSelected = sharedPref.getString(MainActivity.PACKAGE, "com.whatsapp");
+        tables = sharedPref.getString(packageSelected+AppDetailActivity.TABLES, "[]");
 
         // Return a new holder instance
         ViewHolder viewHolder = new ViewHolder(contactView);
@@ -112,9 +109,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
             @Override
             public void onClick(View view) {
 
-                if(sharedPref.contains(packageSelected+AppDetailActivity.TABLES)){
-
-                    String tables = sharedPref.getString(packageSelected+AppDetailActivity.TABLES, "[]");
+                if(sharedPref.contains(packageSelected+ AppDetailActivity.TABLES)){
 
                     String[] listTables = tables.replace("[","").replace("]","").replace("\"","").split(", ");
                     ArrayList<String> injectionStrings = new ArrayList<>();
@@ -147,7 +142,6 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
                     }
 
                 }
-
             }
         });
     }
@@ -190,26 +184,15 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
                                             String event = document.getId()+"//"+document.get(labels[1])+"//"+document.get(labels[2])+"//"+document.get(labels[3])+"//"+document.get(labels[4])+"//"+document.get(labels[10])+"//"+document.get("code");
                                             seqEvents.add(event);
 
-                                        } else {
-                                            Log.d("NO DOCUMENT", "No such document");
                                         }
-                                    } else {
-                                        Log.d("FAILURE READING", "get failed with ", task.getException());
                                     }
                                 }
                             });
                         }
-
-
-                    } else {
-                        Log.d("READ EVENT", "No such document");
                     }
-                } else {
-                    Log.d("READ EVENT", "get failed with ", task.getException());
                 }
             }
         });
-
     }
 
     @Override
@@ -222,6 +205,12 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         notifyDataSetChanged();
     }
 
+    public void updateListInjection() {
+        notifyDataSetChanged();
+        
+    }
+
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView executionName;
         public Button replayButton;
@@ -230,10 +219,17 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         public ViewHolder(View itemView) {
             super(itemView);
 
-            executionName = (TextView) itemView.findViewById(R.id.executionTime);
-            replayButton = (Button) itemView.findViewById(R.id.playButton);
-            injectionButton = (Button) itemView.findViewById(R.id.injectionButton);
+            executionName = itemView.findViewById(R.id.executionTime);
+            replayButton = itemView.findViewById(R.id.playButton);
+            injectionButton = itemView.findViewById(R.id.injectionButton);
+
+            if(tables.equals("[]")){
+                injectionButton.setVisibility(View.INVISIBLE);
+            }else{
+                injectionButton.setVisibility(View.VISIBLE);
+            }
         }
     }
+
 
 }
