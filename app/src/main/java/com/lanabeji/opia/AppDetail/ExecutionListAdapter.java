@@ -38,12 +38,17 @@ import static com.lanabeji.opia.Service.OpiaAccessibility.labels;
 
 public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdapter.ViewHolder>{
 
+    //executions shown on the list
     private List<String> mExecutions;
+
+    //storage
     private FirebaseFirestore db;
+    private SharedPreferences sharedPref;
+
+    //general info
     private String device;
     private ArrayList<String> seqEvents;
     private Context context;
-    private SharedPreferences sharedPref;
     private String packageSelected;
     private String tables;
 
@@ -75,6 +80,8 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
     @Override
     public void onBindViewHolder(ExecutionListAdapter.ViewHolder viewHolder, int position) {
         final String current = mExecutions.get(position);
+
+        //indicates that the replay it is not an injection event
         OpiaAccessibility.changeInjection("");
 
         TextView textView = viewHolder.executionName;
@@ -86,22 +93,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         viewHolder.replayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                readEvent(current);
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                writeSelected(packageSelected, false);
-                OpiaAccessibility.replaceSeqEvents(seqEvents);
-                OpiaAccessibility.changeOneTime();
-                Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    context.startActivity(launchIntent);
-                }
+                replay(current);
             }
         });
 
@@ -110,42 +102,95 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
             public void onClick(View view) {
 
                 if(sharedPref.contains(packageSelected+ AppDetailActivity.TABLES)){
-
-                    String[] listTables = tables.replace("[","").replace("]","").replace("\"","").split(", ");
-                    ArrayList<String> injectionStrings = new ArrayList<>();
-
-                    injectionStrings.add("' OR '1'='1;--");
-                    injectionStrings.add("0 OR '1'='1;--");
-                    injectionStrings.add(";");
-
-                    for(int i = 0; i < listTables.length; i++){
-                        injectionStrings.add("'; DROP TABLE "+ listTables[i]+";--");
-                        injectionStrings.add("0; DROP TABLE "+ listTables[i]+";--");
-                    }
-
-                    readEvent(current);
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    writeSelected(packageSelected, false);
-                    OpiaAccessibility.replaceSeqEvents(seqEvents);
-                    OpiaAccessibility.changeOneTime();
-                    OpiaAccessibility.changeInjection("injection");
-                    OpiaAccessibility.changeInjectionStrings(injectionStrings);
-                    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
-                    if (launchIntent != null) {
-                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        context.startActivity(launchIntent);
-                    }
-
+                    inject(current);
                 }
             }
         });
     }
 
+    // METHODS
+
+    /*
+    Replays a previous sequence of events
+    */
+    public void replay(String current){
+        //get the sequence of events
+        readEvent(current);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //save the package selected but indicates accessibility api that a replay event will happen, so it should not record
+        writeSelected(packageSelected, false);
+
+        //write the sequence of events related with the selected timestamp
+        OpiaAccessibility.replaceSeqEvents(seqEvents);
+
+        //it executes the replay only one time
+        OpiaAccessibility.changeOneTime();
+
+        //start the app
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(launchIntent);
+        }
+    }
+
+    /*
+    Generates a list of strings to inject and executes a previous sequence of events replacing text inputs with strings to inject
+    */
+    public void inject(String current){
+
+        //generate a list of strings to inject
+        String[] listTables = tables.replace("[","").replace("]","").replace("\"","").split(", ");
+        ArrayList<String> injectionStrings = new ArrayList<>();
+
+        injectionStrings.add("' OR '1'='1';--");
+        injectionStrings.add("0 OR '1'='1;--");
+        injectionStrings.add(";");
+
+        for(int i = 0; i < listTables.length; i++){
+            injectionStrings.add("'; DROP TABLE "+ listTables[i]+";--");
+            injectionStrings.add("0; DROP TABLE "+ listTables[i]+";--");
+        }
+
+        //get the sequence of events
+        readEvent(current);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //save the package selected but indicates accessibility api that a replay event will happen, so it should not record
+        writeSelected(packageSelected, false);
+
+        //write the sequence of events related with the selected timestamp
+        OpiaAccessibility.replaceSeqEvents(seqEvents);
+
+        //it executes the replay only one time
+        OpiaAccessibility.changeOneTime();
+
+        //indicates the replay should do injection
+        OpiaAccessibility.changeInjection("injection");
+
+        //write the strings to inject
+        OpiaAccessibility.changeInjectionStrings(injectionStrings);
+
+        //start the app
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageSelected);
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(launchIntent);
+        }
+    }
+
+    /*
+    Writes on shared preferences which app to test
+    */
     public void writeSelected(String packageSelected, boolean isRecording){
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(MainActivity.PACKAGE, packageSelected);
@@ -153,6 +198,9 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         editor.commit();
     }
 
+    /*
+    Gets from firebase the events of the execution with the id(timestamp)
+    */
     private void readEvent(String id){
 
         DocumentReference docRef = db.collection(device).document(id);
@@ -165,7 +213,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
                     if (document.exists()) {
 
                         ArrayList<String> sortedKeys =
-                                new ArrayList<String>(document.getData().keySet());
+                                new ArrayList<>(document.getData().keySet());
 
                         Collections.sort(sortedKeys);
 
@@ -200,17 +248,17 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         return mExecutions.size();
     }
 
+    /*
+    Updates the execution list
+    */
     public void updateList(List<String> data) {
         mExecutions = data;
         notifyDataSetChanged();
     }
 
-    public void updateListInjection() {
-        notifyDataSetChanged();
-        
-    }
-
-
+    /*
+    View holder to manage the content of each row in the recycler view
+    */
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView executionName;
         public Button replayButton;
@@ -230,6 +278,4 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
             }
         }
     }
-
-
 }

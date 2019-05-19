@@ -286,8 +286,7 @@ public class AppDetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            //recreate();
-            adapter.updateListInjection();
+            finish();
         }
     }
 
