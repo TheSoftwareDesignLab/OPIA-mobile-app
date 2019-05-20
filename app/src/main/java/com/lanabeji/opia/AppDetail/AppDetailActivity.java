@@ -243,6 +243,7 @@ public class AppDetailActivity extends AppCompatActivity {
 
         if (id == R.id.action_http) {
             String currentServer = preferences.getString(MainActivity.IP_SERVER, "EMPTY");
+            System.out.println("HIZO CLICK");
             showAlert(currentServer);
             return true;
         }

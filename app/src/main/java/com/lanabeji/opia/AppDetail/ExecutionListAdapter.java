@@ -152,9 +152,13 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         injectionStrings.add("0 OR '1'='1;--");
         injectionStrings.add(";");
 
+        String currentTable = "";
         for(int i = 0; i < listTables.length; i++){
-            injectionStrings.add("'; DROP TABLE "+ listTables[i]+";--");
-            injectionStrings.add("0; DROP TABLE "+ listTables[i]+";--");
+            currentTable = listTables[i];
+            if(!currentTable.equals("android_metadata") && !currentTable.equals("room_master_table")){
+                injectionStrings.add("'; DROP TABLE "+ currentTable+";--");
+                injectionStrings.add("0; DROP TABLE "+ currentTable+";--");
+            }
         }
 
         //get the sequence of events

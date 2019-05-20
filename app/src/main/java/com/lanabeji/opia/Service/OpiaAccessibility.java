@@ -222,13 +222,14 @@ public class OpiaAccessibility extends AccessibilityService {
         wm.addView(mLayout, lp);
 
         powerButton = mLayout.findViewById(R.id.stop);
+        powerButton.setVisibility(View.GONE);
         powerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 writeEventDevice("packageName", packageSelected);
                 executionTime = "EMPTY";
-                powerButton.setVisibility(View.INVISIBLE);
+                powerButton.setVisibility(View.GONE);
                 Intent dialogIntent = new Intent(getBaseContext(), ListActivity.class);
                 dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(dialogIntent);
@@ -252,7 +253,7 @@ public class OpiaAccessibility extends AccessibilityService {
         if(eventType.equals("text")){ //verifies if the node is a text field because a password field cannot be read
             if (!source.isPassword()) {
                 if(source.getText() != null){
-                    text = source.getText().toString();
+                    text = String.valueOf(source.getText());
                 }
             }
             else{
@@ -260,7 +261,7 @@ public class OpiaAccessibility extends AccessibilityService {
             }
         }
         else{
-            text = source.getText().toString();
+            text = String.valueOf(source.getText());
         }
 
         Rect outBoundsParent = new Rect();
@@ -473,17 +474,16 @@ public class OpiaAccessibility extends AccessibilityService {
                 default:
                     break;
             }
-        }
 
-        new ADBCommand().execute(urlServer+"/log/"+packageSelected);
-        while(!logBool){
-            //Espere a que llegue la respuesta
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            new ADBCommand().execute(urlServer+"/log/"+packageSelected);
+            while(!logBool){
+                //Espere a que llegue la respuesta
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-
         }
 
         new ADBCommand().execute(urlServer+"/clear/");
