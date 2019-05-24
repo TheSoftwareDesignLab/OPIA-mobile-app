@@ -74,6 +74,7 @@ public class OpiaAccessibility extends AccessibilityService {
     static int counterInjection = 1;
     static ArrayList<String> injectionStrings = new ArrayList<>();
     public static ArrayList<String> seqEvents = new ArrayList<>();
+    public static String execution = "";
 
     //UI Elements
     private FrameLayout mLayout;
@@ -317,8 +318,9 @@ public class OpiaAccessibility extends AccessibilityService {
     /*
     Write the current sequence of events to execute, depending of the selection on app detail
     */
-    public static void replaceSeqEvents(ArrayList<String> newSeq){
+    public static void replaceSeqEvents(ArrayList<String> newSeq, String exec){
         seqEvents = newSeq;
+        execution = exec;
     }
 
     /*
@@ -348,9 +350,6 @@ public class OpiaAccessibility extends AccessibilityService {
         oneTime = true;
         Collections.sort(seqEvents);
         String urlServer = getSharedPreferences(MainActivity.APP, MODE_PRIVATE).getString(MainActivity.SERVER, "http://localhost:5000");
-
-        //Clears variables on the server
-        new ADBCommand().execute(urlServer+"/clearvar/");
 
         if(injection.equals("")){ //it is simply replay
             replaySeq();
@@ -475,7 +474,7 @@ public class OpiaAccessibility extends AccessibilityService {
                     break;
             }
 
-            new ADBCommand().execute(urlServer+"/log/"+packageSelected);
+            new ADBCommand().execute(urlServer+"/log/"+MainActivity.DEVICE+"/"+execution+"/"+packageSelected);
             while(!logBool){
                 //Espere a que llegue la respuesta
                 try {

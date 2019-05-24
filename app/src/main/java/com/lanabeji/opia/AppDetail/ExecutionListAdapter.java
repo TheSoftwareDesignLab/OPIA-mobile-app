@@ -126,7 +126,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         writeSelected(packageSelected, false);
 
         //write the sequence of events related with the selected timestamp
-        OpiaAccessibility.replaceSeqEvents(seqEvents);
+        OpiaAccessibility.replaceSeqEvents(seqEvents, current);
 
         //it executes the replay only one time
         OpiaAccessibility.changeOneTime();
@@ -173,7 +173,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         writeSelected(packageSelected, false);
 
         //write the sequence of events related with the selected timestamp
-        OpiaAccessibility.replaceSeqEvents(seqEvents);
+        OpiaAccessibility.replaceSeqEvents(seqEvents, current);
 
         //it executes the replay only one time
         OpiaAccessibility.changeOneTime();
