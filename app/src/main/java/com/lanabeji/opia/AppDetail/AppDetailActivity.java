@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
@@ -17,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -61,6 +63,8 @@ public class AppDetailActivity extends AppCompatActivity {
     //UI Elements
     ImageView appImage;
     TextView appName;
+    Button buttonTables;
+    Button buttonSP;
 
     //Storage variables
     FirebaseFirestore db;
@@ -97,12 +101,31 @@ public class AppDetailActivity extends AppCompatActivity {
         if(currentServer.equals("EMPTY")){
             showAlert(currentServer);
         }
+
+        if(!preferences.getString(packageSelected+TABLES,"EMPTY").equals("EMPTY")){
+            buttonTables.setVisibility(View.VISIBLE);
+            buttonSP.setVisibility(View.VISIBLE);
+        }
+        else{
+            buttonTables.setVisibility(View.INVISIBLE);
+            buttonSP.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         new LoadExecutions().execute();
+        System.out.println(preferences.getString(packageSelected+TABLES,"EMPTY"));
+        if(!preferences.getString(packageSelected+TABLES,"EMPTY").equals("EMPTY")){
+            buttonTables.setVisibility(View.VISIBLE);
+            buttonSP.setVisibility(View.VISIBLE);
+        }
+        else{
+            buttonTables.setVisibility(View.INVISIBLE);
+            buttonSP.setVisibility(View.INVISIBLE);
+        }
     }
 
     //SETUP METHODS
@@ -110,6 +133,9 @@ public class AppDetailActivity extends AppCompatActivity {
     private void setupAppInfo(){
         appName = findViewById(R.id.appName);
         appImage = findViewById(R.id.appImage);
+
+        buttonTables = findViewById(R.id.buttonTables);
+        buttonSP = findViewById(R.id.buttonPreferences);
 
         Bundle extras = getIntent().getExtras();
         packageSelected = extras.getString(APP_PACKAGE, "com.lanabeji.notsecure");
@@ -163,7 +189,7 @@ public class AppDetailActivity extends AppCompatActivity {
         }
         else{
             String currentServer = preferences.getString(MainActivity.SERVER, "localhost");
-            String url = currentServer + "/app/" + packageSelected;
+            String url = currentServer + "/app/" + MainActivity.DEVICE + "/" + packageSelected;
             new GetTables().execute(url);
         }
     }
@@ -224,6 +250,45 @@ public class AppDetailActivity extends AppCompatActivity {
 
         Matcher matcher = IPv4_PATTERN.matcher(ip);
         return matcher.matches();
+    }
+
+    /*
+    Opens a browser with the url
+    */
+    public void openUrl(String url){
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
+    /*
+       Open a browser showing the tables extracted
+    */
+    public void showTables(View v){
+
+        String currentIP = preferences.getString(MainActivity.IP_SERVER, "EMPTY");
+        if(currentIP.equals("EMPTY")){
+            showAlert(currentIP);
+        }
+        else{
+            String currentServer = preferences.getString(MainActivity.SERVER, "localhost");
+            String url = currentServer + "/databases/" + MainActivity.DEVICE + "/" + packageSelected;
+            openUrl(url);
+        }
+    }
+
+    /*
+    Open a browser showing the shared preferences extracted
+    */
+    public void showSharedPreferences(View v){
+
+        String currentIP = preferences.getString(MainActivity.IP_SERVER, "EMPTY");
+        if(currentIP.equals("EMPTY")){
+            showAlert(currentIP);
+        }
+        else{
+            String currentServer = preferences.getString(MainActivity.SERVER, "localhost");
+            String url = currentServer + "/sp/" + MainActivity.DEVICE + "/" + packageSelected;
+            openUrl(url);
+        }
     }
 
     // ACTION BAR METHODS

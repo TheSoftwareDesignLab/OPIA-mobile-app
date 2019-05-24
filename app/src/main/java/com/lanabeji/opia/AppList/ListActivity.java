@@ -59,11 +59,12 @@ public class ListActivity extends AppCompatActivity {
     Creates and adds a toolbar
     */
     private void setupActionBar(){
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
     }
 
     //METHODS

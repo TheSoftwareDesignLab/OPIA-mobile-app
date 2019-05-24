@@ -7,4 +7,6 @@
     <string name="test_integrity">Test integrity</string>
     <string name="start">Start</string>
     <string name="action_http">Change server IP</string>
+    <string name="show_tables">Show tables</string>
+    <string name="show_sp">Show shared preferences</string>
 </resources>

@@ -101,6 +101,32 @@
             android:text="@string/test_integrity"
             android:textColor="@color/colorPrimary" />
 
+        <Button
+            android:id="@+id/buttonTables"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_color"
+            android:onClick="showTables"
+            android:text="@string/show_tables"
+            android:textColor="@color/colorPrimary"
+            android:visibility="invisible"/>
+
+        <Button
+            android:id="@+id/buttonPreferences"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_color"
+            android:onClick="showSharedPreferences"
+            android:text="@string/show_sp"
+            android:textColor="@color/colorPrimary"
+            android:visibility="invisible"/>
+
     </LinearLayout>
 
 </ScrollView>
