@@ -531,10 +531,13 @@ public class OpiaAccessibility extends AccessibilityService {
                 return ans;
             } else {
                 if (source.getChildCount() > 0) {
+                    AccessibilityNodeInfo child;
+                    AccessibilityNodeInfo newChild;
                     for (int i = 0; i < source.getChildCount(); i++) {
-                        AccessibilityNodeInfo child = source.getChild(i);
-                        if (findNode(text, bounds, classname, child) != null) {
-                            return findNode(text, bounds, classname, source.getChild(i));
+                        child = source.getChild(i);
+                        newChild = findNode(text, bounds, classname, child);
+                        if (newChild != null) {
+                            return newChild;
                         }
                         child.recycle();
                     }
@@ -571,10 +574,13 @@ public class OpiaAccessibility extends AccessibilityService {
                 return ans;
             } else {
                 if (source.getChildCount() > 0) {
+                    AccessibilityNodeInfo child;
+                    AccessibilityNodeInfo newChild;
                     for (int i = 0; i < source.getChildCount(); i++) {
-                        AccessibilityNodeInfo child = source.getChild(i);
-                        if (findNode(bounds, classname, source.getChild(i)) != null) {
-                            return findNode(bounds, classname, source.getChild(i));
+                        child = source.getChild(i);
+                        newChild = findNode(bounds, classname, child);
+                        if ( newChild != null) {
+                            return newChild;
                         }
                         child.recycle();
                     }
@@ -603,10 +609,13 @@ public class OpiaAccessibility extends AccessibilityService {
                 return ans;
             } else {
                 if (source.getChildCount() > 0) {
+                    AccessibilityNodeInfo child;
+                    AccessibilityNodeInfo newChild;
                     for (int i = 0; i < source.getChildCount(); i++) {
-                        AccessibilityNodeInfo child = source.getChild(i);
-                        if (findNodeScroll(classname, source.getChild(i)) != null) {
-                            return findNodeScroll(classname, source.getChild(i));
+                        child = source.getChild(i);
+                        newChild = findNodeScroll(classname, child);
+                        if (newChild != null) {
+                            return newChild;
                         }
                         child.recycle();
                     }

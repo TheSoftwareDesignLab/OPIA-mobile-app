@@ -3,6 +3,7 @@ package com.lanabeji.opia.AppDetail;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,10 +22,12 @@ import com.lanabeji.opia.Main.MainActivity;
 import com.lanabeji.opia.Service.OpiaAccessibility;
 import com.lanabeji.opia.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.lanabeji.opia.AppList.AppListAdapter.RECORDING;
@@ -87,13 +90,22 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         TextView textView = viewHolder.executionName;
 
         long stamp = Long.parseLong(current);
-        Date result = new Date(stamp);
-        textView.setText(result.toString());
+
+        String result = new SimpleDateFormat("d MMM yyyy HH:mm:ss", Locale.ENGLISH).format(stamp);
+
+        textView.setText(result);
 
         viewHolder.replayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 replay(current);
+            }
+        });
+
+        viewHolder.logButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLog(current);
             }
         });
 
@@ -192,6 +204,15 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         }
     }
 
+    public void showLog(String execution){
+
+        String currentServer = sharedPref.getString(MainActivity.SERVER, "localhost");
+        String url = currentServer + "/logcat/" + MainActivity.DEVICE + "/" + execution + "/" + packageSelected;
+
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        context.startActivity(browserIntent);
+    }
+
     /*
     Writes on shared preferences which app to test
     */
@@ -267,6 +288,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
         public TextView executionName;
         public Button replayButton;
         public Button injectionButton;
+        public Button logButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -274,6 +296,7 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
             executionName = itemView.findViewById(R.id.executionTime);
             replayButton = itemView.findViewById(R.id.playButton);
             injectionButton = itemView.findViewById(R.id.injectionButton);
+            logButton = itemView.findViewById(R.id.logButton);
 
             if(tables.equals("[]")){
                 injectionButton.setVisibility(View.INVISIBLE);
@@ -282,4 +305,5 @@ public class ExecutionListAdapter extends RecyclerView.Adapter<ExecutionListAdap
             }
         }
     }
+
 }

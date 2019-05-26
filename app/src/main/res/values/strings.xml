@@ -9,4 +9,5 @@
     <string name="action_http">Change server IP</string>
     <string name="show_tables">Show tables</string>
     <string name="show_sp">Show shared preferences</string>
+    <string name="select_app">Select an app</string>
 </resources>

@@ -64,6 +64,7 @@ public class ListActivity extends AppCompatActivity {
 
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle("Select an app");
 
     }
 
@@ -73,7 +74,7 @@ public class ListActivity extends AppCompatActivity {
     Lists all the app and initializes the recycler view
     */
     private void getApps(){
-        apps = new ArrayList<AppItem>();
+        apps = new ArrayList<>();
         final PackageManager pm = getPackageManager();
 
         //Get a list of installed apps
