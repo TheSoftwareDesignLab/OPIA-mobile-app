@@ -284,6 +284,9 @@ public class OpiaAccessibility extends AccessibilityService {
         writeEvent(values, timestampEvent);
         //write the event on sequence of events
         writeEventDevice(timestampEvent, eventType);
+
+        String urlServer = getSharedPreferences(MainActivity.APP, MODE_PRIVATE).getString(MainActivity.SERVER, "http://localhost:5000");
+        new ADBCommand().execute(urlServer+"/log/"+MainActivity.DEVICE+"/"+executionTime+"/"+packageSelected);
     }
 
     /*
@@ -300,13 +303,11 @@ public class OpiaAccessibility extends AccessibilityService {
         db.collection(events).document(timestampEvent).set(newEvent).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.d("ON SUCCESS", "DocumentSnapshot added with ID: " + aVoid);
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w("ON FAILURE", "Error adding document", e);
                     }
                 });
 
@@ -539,7 +540,9 @@ public class OpiaAccessibility extends AccessibilityService {
                         if (newChild != null) {
                             return newChild;
                         }
-                        child.recycle();
+                        if(child != null){
+                            child.recycle();
+                        }
                     }
                 }
             }
@@ -582,7 +585,9 @@ public class OpiaAccessibility extends AccessibilityService {
                         if ( newChild != null) {
                             return newChild;
                         }
-                        child.recycle();
+                        if(child != null){
+                            child.recycle();
+                        }
                     }
                 }
             }
@@ -617,7 +622,9 @@ public class OpiaAccessibility extends AccessibilityService {
                         if (newChild != null) {
                             return newChild;
                         }
-                        child.recycle();
+                        if(child != null){
+                            child.recycle();
+                        }
                     }
                 }
             }
@@ -671,13 +678,11 @@ public class OpiaAccessibility extends AccessibilityService {
         db.collection(events).document(timestampEvent).set(newEvent).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.d("ON SUCCESS", "DocumentSnapshot added with ID: " + aVoid);
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w("ON FAILURE", "Error adding document", e);
                     }
                 });
     }
