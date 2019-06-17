@@ -6,6 +6,14 @@ It allows developers/testers to (i) execute record-and-replay testing;
 (iii) collect execution logs with the purpose of identifying leaks of sensitive information via logs, and 
 (iv) extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted. </p>
 
+## Table of contents
+
+- [Technologies](#technologies)
+- [Installation](#installation)
+- [Testing your first app](#testing-your-first-app)
+- [Examples](#examples)
+
+
 ## Technologies
 
 Opia has three important components, a mobile application and a web server. In this repository you can find the mobile application.
