@@ -1,5 +1,3 @@
-<h3 align="center">OPIA Mobile App</h3>
-
 <p align="justify">
 Opia is an open source tool for on-device testing to better support developers in testing security vulnerabilities during evolution and maintenance of mobile apps. 
 It allows developers/testers to (i) execute record-and-replay testing; 
