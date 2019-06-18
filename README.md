@@ -3,10 +3,10 @@ Opia is an open source tool for on-device testing to better support developers i
 It allows developers/testers to:
     
    <ol>
-    <li><a>execute record-and-replay testing</a>
-    <li><a>automatically extract information of local databases to automatically conduct SQL-injection attacks</a>
-    <li><a>collect execution logs with the purpose of identifying leaks of sensitive information via logs, and</a>
-    <li><a>extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted</a>
+    <li>execute record-and-replay testing
+    <li>automatically extract information of local databases to automatically conduct SQL-injection attacks
+    <li>collect execution logs with the purpose of identifying leaks of sensitive information via logs, and
+    <li>extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted
     </ol>
 </p>
 
