@@ -61,8 +61,9 @@ Next, write the IP Address where the server is running, in order to create a com
 </p>
 
 <p align="justify">
-To record, tap the record button, you will see that an 'Eye' button will appear on the top of the screen. 
+To record, tap the 'Record' button and use the app as you would usually. You will see that an 'Eye' button will appear on the top of the screen. 
 You should tap that button to finish the record.
+All the records will be visible once you search again the app.
 </p>
 
 <p align="justify">
@@ -71,7 +72,7 @@ To see the log of a replay, search the execution and touch the button with the f
 </p>
 
 <p align="justify">
-To extract tables and shared preferences, touch the button Test Integrity and do not encrypt it! 
+To extract tables and shared preferences, touch the 'Test Integrity' button and do not encrypt it! 
 To see extracted tables and shared preferences, search again the app and you will see two new buttons, 'Show tables' and 'Show shared preferences'.
 If there are not new buttons, that means the application has her backup encrypted.
 </p>
@@ -84,5 +85,3 @@ To execute SQL injection attacks, touch the 'Injection' button in a previous rec
 
 To see Opia running on real application, watch the following playlist:
 <a href="https://www.youtube.com/playlist?list=PLF5U8kfVgRcJrDapP-nvNXv9TrjqGi6LJ"> Opia Examples </a>
-
-
