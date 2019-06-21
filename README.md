@@ -10,7 +10,7 @@ It allows developers/testers to:
 To learn more about Opia and see a real execution, watch the following video: 
 
 <p align="center">
-<iframe width="500" height="282" src="https://youtu.be/5Q53WsH_Ov0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="500" height="282" src="https://www.youtube.com/embed/5Q53WsH_Ov0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
 ## Technologies
