@@ -7,7 +7,11 @@ It allows developers/testers to:
 3.  collect execution logs with the purpose of identifying leaks of sensitive information via logs, and
 4.  extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted
 
+To learn more about Opia and see a real execution, watch the following video: 
 
+<p align="center">
+<iframe width="500" height="282" src="https://youtu.be/5Q53WsH_Ov0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
 
 ## Technologies
 <p align="justify">
