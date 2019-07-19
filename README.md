@@ -142,9 +142,13 @@ On the other hand, Opia could not replay all the sequence of actions in native a
 The following picture presents a node of the Node Tree Debugging of a native app, <i>Gmail</i>, it is possible to see that a single node of a native app contains many nodes, in this case, that node is the top bar to search mails and it contains more than five nodes.
 </p>
 
+![](/assets/imgs/rq11.png)
+
 <p align="justify">
 On the other hand, the next picture depicts the whole Node Debugging Tree of an hybrid app, <i>Geo Challenge</i>. It only contains a single node, a Frame Layout, but it does not have child nodes, because the service is not able to recognize web components.
 </p>
+
+![](/assets/imgs/rq12.png)
 
 <h3> Information Exposure </h3>
 
@@ -160,13 +164,19 @@ That's why we conducted a second case study to estimate whether Opia is useful t
 The following picture depicts the percentage of apps that encrypt their data, thus Opia cannot extract tables or shared preferences. 30% of the apps take care about confidentiality and privacy by preventing the extraction of the backup while 70% store data in plain text without any access control. 
 </p>
 
+![](/assets/imgs/rq24.png)
+
 <p align="justify">
 Besides, the next picture illustrates the amount of tables extracted against the amount of those tables that have any type of codification. We expected and corroborated that native apps had more tables while hybrid apps did not have a huge volume of tables because they use different techniques to store data. However, both types of apps maintain table data in plain text, i.e none of their tables is secure.
 </p>
 
+![](/assets/imgs/rq21.png)
+
 <p align="justify">
 A similar situation is represented in the above picture, where there is a comparison between the total amount of Shared Preferences files and the amount of files without any security. There is not a single file with codification, all of them are understandable for everyone.
 </p>
+
+![](/assets/imgs/rq22.png)
 
 <p align="justify">
 It is worth noting that tables and shared preferences can store a huge range of information from daily usage of an app to sensible information such as passwords, conversations or payment methods. Those information could be used by an attacker to understand how a user behaves and execute an spoofing attack, steal her identity or even, perform a ransomware. Plus, the user does not have the possibility to prevent or improve the way in which apps are manipulating her data.
@@ -175,6 +185,8 @@ It is worth noting that tables and shared preferences can store a huge range of 
 <p align="justify">
 On the other hand, this picture presents the results of analyzing the logs after every execution. We found that 70% of the analyzed apps do not leave information printed in console but 30% print data. For instance, urls where the app is saving/retrieving resources, a track of the internal components (i.e logs when starting or finishing an intent, saving new information, deleting data), table names, dates, transaction ids, etc.
 </p>
+
+![](/assets/imgs/rq23.png)
 
 <h3> SQL Injection </h3>
 
