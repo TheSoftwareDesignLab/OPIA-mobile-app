@@ -2,10 +2,8 @@
 Opia is an open source tool for on-device testing to better support developers in testing security vulnerabilities during evolution and maintenance of mobile apps. 
 It allows developers/testers to:
 
-1.  execute record-and-replay testing
-2.  automatically extract information of local databases to automatically conduct SQL-injection attacks
-3.  collect execution logs with the purpose of identifying leaks of sensitive information via logs, and
-4.  extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted
+1.  conduct SQL-injection attacks and collect logs to identify leaks of sensitive information through record-and-replay testing 
+2.  extract data stored in local databases and shared preferences to identify sensitive information that is not properly encrypted
 
 To learn more about Opia and see a real execution, watch the following video: 
 
@@ -87,6 +85,8 @@ To see Opia running on real applications, watch the following playlist:
 
 <p align="justify">
 Here you will find the results of an empirical study to evaluate Opia in terms of (i) Opia's ability to record and replay a sequence of events in native and hybrid apps; (ii) Opia's capability to find leaked information and (iii) Opia's ability to execute SQL Injection attacks. The context of this study consists of (i) a set of 10 native apps and (ii) a set of 10 hybrid apps, both from the Google Play Store. Both were randomly selected, but hybrid apps were found using the ionic showcase, then searching them in the Google Play Store. Its size varies from 2.8 MB to 41 MB and there is diversity in the categories.
+    
+It is worth noting that 
 </p>
 
 The list of apps used to test Opia is presented below:
@@ -149,6 +149,8 @@ On the other hand, the next picture depicts the whole Node Debugging Tree of an 
 </p>
 
 ![](/assets/imgs/rq12.png)
+
+In conclusion, Opia is able to replay user's behavior in Android apps. For hybrid apps it is necessary further implementation to recognize web components and for native apps, it is necessary improve the algorithm to reduce the latency. However, Opia keeps a track of the actions of the user to conduct a realistic vulnerability testing. In particular, Opia has 
 
 <h3> Information Exposure </h3>
 
