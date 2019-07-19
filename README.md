@@ -124,8 +124,7 @@ To evaluate if Opia is capable of reproducing user's behavior, we conducted a ca
 The following picture depicts the number of events that Opia was able to reproduce in each of the applications involved in the case study. Green columns correspond to hybrid applications, while the blue ones show the results of native applications. Based on the graphic, Opia could reproduce more than half of the sequence of events in 65% of the apps. In particular, the reproduction of events was successful (more than half) in 80% of native applications, while in hybrid applications it was only 50%. Specially, there are two hybrid applications in which it was not possible to reproduce any of the previously recorded events. 
 </p>
 
-<img src="/assets/imgs/rq1.png"
-     alt="Number of events replayed by Opia in hybrid and native apps"/>
+![](/assets/imgs/rq1.png)
 
 <p align="justify">
 To understand this behavior, it is necessary to remember how Opia works. When Opia is recording, it detects when the user interacts with any GUI Element. Each GUI element is represented as a node in the Node Tree Debugging, which is saved in the database with another attributes of the event. In consequence, to replay a previous record, Opia should traverse the tree to find the nodes involved in the sequence. However, the Accessibility Service, running in background, only recognizes Android elements customized by the app. That means, if the elements used by the app are different from the components provided by Android, Opia does not save the element and does not perform the action.
