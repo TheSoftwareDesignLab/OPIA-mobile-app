@@ -203,7 +203,7 @@ Based on the previous studies (Record & Replay, Information Exposure), we conduc
 </p>
 
 <p align="justify">
-After performing the injection actions, we found that none of the apps crashed nor a table was dropped. However, Opia generated a list of malign strings based on the tables extracted and replayed three times the sequence of events without interruption. 
+After performing the injection actions, we found that none of the apps crashed nor a table was dropped. However, Opia generated a list of malign strings based on the tables extracted and replayed three times the sequence of events without interruption. The list of malign strings contains three types of strings, (i) DROP statements for every table found and extracted, to delete information that developers store locally, (ii) malformed statements which contain special characteres such as ';', to crash the application if the developer does not check properly inputs and concatenates them to create SQL queries, and (iii) OR statements (OR 1=1) to bypass login, if developers concatenate inputs to create queries, the OR statement will be added at the end of the queries and it will always return true, so it can avoid logins. Finally, Opia replays three times the sequence of events because the strings to inject are selected randomly, thus, in every iteration the strings will be different and different results will be achieved.
 </p>
 
 <p align="justify">
