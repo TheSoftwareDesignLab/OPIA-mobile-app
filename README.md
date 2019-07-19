@@ -114,7 +114,7 @@ The list of apps used to test Opia is presented below:
 | Netflix | Entertainment | Varies | Native | com.netflix.mediaclient  |		
 | My Calendar | Health and Fitness | Varies | Native | com.popularapp.periodcalendar |
 
-### Record & Replay
+<h3> Record & Replay </h3>
 
 <p align="justify">
 To evaluate if Opia is capable of reproducing user's behavior, we conducted a case study that shows that Opia not only recognizes interactions with GUI elements, but is able to find them and perform the corresponding action when replaying a record. It means, we wanted to know whether we could keep a reliable control of the user's actions to use it later to test security vulnerabilities. To do this, we (i) performed 10 events (GUI element interaction) in 20 apps, including clicks, text inputs and scrolls, and (ii) observed the amount of events replayed by Opia.
@@ -122,6 +122,7 @@ To evaluate if Opia is capable of reproducing user's behavior, we conducted a ca
 
 <p align="justify">
 The following picture depicts the number of events that Opia was able to reproduce in each of the applications involved in the case study. Green columns correspond to hybrid applications, while the blue ones show the results of native applications. Based on the graphic, Opia could reproduce more than half of the sequence of events in 65% of the apps. In particular, the reproduction of events was successful (more than half) in 80% of native applications, while in hybrid applications it was only 50%. Specially, there are two hybrid applications in which it was not possible to reproduce any of the previously recorded events. 
+</p>
 
 <img src="/assets/imgs/rq1.png"
      alt="Number of events replayed by Opia in hybrid and native apps"/>
@@ -146,7 +147,7 @@ The following picture presents a node of the Node Tree Debugging of a native app
 On the other hand, the next picture depicts the whole Node Debugging Tree of an hybrid app, <i>Geo Challenge</i>. It only contains a single node, a Frame Layout, but it does not have child nodes, because the service is not able to recognize web components.
 </p>
 
-### Information Exposure
+<h3> Information Exposure </h3>
 
 <p align="justify">
 Many developers save user's data on mobile devices to offer offline functionalities, the common ways are using local databases or settings files, called Shared Preferences. Nevertheless, most of developers do not worry about keeping that data safe (i.e preserve data immutable and private). Besides, during development time, developers often write console messages to prove if a determined feature is working, some of those messages contain sensible information such as credit cards, passwords, emails, telephone numbers, etc. Plus, sometimes they forget to remove those messages and user's information is exposed. 
@@ -176,7 +177,7 @@ It is worth noting that tables and shared preferences can store a huge range of 
 On the other hand, this picture presents the results of analyzing the logs after every execution. We found that 70% of the analyzed apps do not leave information printed in console but 30% print data. For instance, urls where the app is saving/retrieving resources, a track of the internal components (i.e logs when starting or finishing an intent, saving new information, deleting data), table names, dates, transaction ids, etc.
 </p>
 
-### SQL Injection
+<h3> SQL Injection </h3>
 
 <p align="justify">
 Based on the previous studies (Record & Replay, Information Exposure), we conducted a case study to evaluate if Opia is capable of execute SQL injection attacks. The main purpose is to test if developers are handling properly user inputs by injecting malign strings. To this, we (i) recorded a sequence of events, (ii) extracted table names and attributes, and (iii) replayed the previous record. 
