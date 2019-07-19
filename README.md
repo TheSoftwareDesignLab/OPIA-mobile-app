@@ -117,11 +117,11 @@ The list of apps used to test Opia is presented below:
 <h3> Record & Replay </h3>
 
 <p align="justify">
-To evaluate if Opia is capable of reproducing user's behavior, we conducted a case study that shows that Opia not only recognizes interactions with GUI elements, but is able to find them and perform the corresponding action when replaying a record. It means, we wanted to know whether we could keep a reliable control of the user's actions to use it later to test security vulnerabilities. To do this, we (i) performed 10 events (GUI element interaction) in 20 apps, including clicks, text inputs and scrolls, and (ii) observed the amount of events replayed by Opia.
+To evaluate if Opia is capable of reproducing user's behavior, we conducted a case study that shows that Opia not only recognizes interactions with GUI elements, but is able to find them and perform the corresponding action when replaying a record. It means, we wanted to know whether we could keep a reliable control of the user's actions to use it later to test security vulnerabilities (SQL Injection attacks and Information Exposure via logs). To do this, we (i) performed 10 events (GUI element interaction) in 20 apps, including clicks, text inputs and scrolls, and (ii) observed the amount of events replayed by Opia.
 </p>
 
 <p align="justify">
-The following picture depicts the number of events that Opia was able to reproduce in each of the applications involved in the case study. Green columns correspond to hybrid applications, while the blue ones show the results of native applications. Based on the graphic, Opia could reproduce more than half of the sequence of events in 65% of the apps. In particular, the reproduction of events was successful (more than half) in 80% of native applications, while in hybrid applications it was only 50%. Specially, there are two hybrid applications in which it was not possible to reproduce any of the previously recorded events. 
+The following picture depicts the number of events that Opia was able to reproduce in each of the applications involved in the case study. Green columns correspond to hybrid applications, while the blue ones show the results of native applications. Based on the graphic, Opia could reproduce more than half of the sequence of events in 65% of the apps. In particular, the reproduction of events was successful (more than half of the sequence of events) in 80% of native applications, while in hybrid applications it was only 50%. In particular, there are two hybrid applications in which it was not possible to reproduce any of the previously recorded events. 
 </p>
 
 ![](/assets/imgs/rq1.png)
@@ -150,7 +150,9 @@ On the other hand, the next picture depicts the whole Node Debugging Tree of an 
 
 ![](/assets/imgs/rq12.png)
 
-In conclusion, Opia is able to replay user's behavior in Android apps. For hybrid apps it is necessary further implementation to recognize web components and for native apps, it is necessary improve the algorithm to reduce the latency. However, Opia keeps a track of the actions of the user to conduct a realistic vulnerability testing. In particular, Opia has 
+<p align="justify">
+In conclusion, Opia is able to replay user's behavior in Android apps. For hybrid apps it is necessary further implementation to recognize web components and for native apps, it is necessary improve the algorithm to reduce the latency. However, Opia keeps a track of the actions of the user to conduct a realistic vulnerability testing. 
+</p>
 
 <h3> Information Exposure </h3>
 
@@ -185,10 +187,14 @@ It is worth noting that tables and shared preferences can store a huge range of 
 </p>
 
 <p align="justify">
-On the other hand, this picture presents the results of analyzing the logs after every execution. We found that 70% of the analyzed apps do not leave information printed in console but 30% print data. For instance, urls where the app is saving/retrieving resources, a track of the internal components (i.e logs when starting or finishing an intent, saving new information, deleting data), table names, dates, transaction ids, etc.
+On the other hand, this picture presents the results of analyzing the logs after every execution. To perform this analysis we searched manually on the logs, that action took between 5 to 10 minutes per application and we found that 70% of the analyzed apps do not leave information printed in console but 30% print data. For instance, urls where the app is saving/retrieving resources, a track of the internal components (i.e logs when starting or finishing an intent, saving new information, deleting data), table names, dates, transaction ids, etc.
 </p>
 
 ![](/assets/imgs/rq23.png)
+
+<p align="justify">
+To summarize, Opia is able to extract and present leaked information in Android apps. It does not matter whether the app is native or hybrid, Opia identifies files and pulls out data. This extraction of data gives Opia an advantage over existing tools because related tools are, mostly, focused on availability not in confidentiality vulnerabilities. Based on the experiments conducted with Opia, we determined that most apps are not handling data properly. However, it is necessary to implement an automatic search to find leaked information via logs, so the developer should not search manually.
+</p>
 
 <h3> SQL Injection </h3>
 
@@ -203,3 +209,7 @@ After performing the injection actions, we found that none of the apps crashed n
 <p align="justify">
 Nevertheless, the sample of applications used to carry out the case study shows that developers have good practices to handle user inputs. Therefore, there was no evidence of damage to the databases and no leaks of information. Opia is a dynamic tool, it is testing to discover if an app has vulnerabilities by trying to exploit them. Opia does not analyze the code statically to find how developers handle user inputs and SQL queries, in consequence, there is not certainty of the effectiveness of the attack. 
 </p>
+
+<p align="justify">
+Finally, Opia is able to perform SQL injection attacks. It tests whether any of the malign strings are successful during executing. It does not spend time and resources analyzing the app statically but it test a known vulnerability of Android apps, SQL injection. Thus, Opia has an advantage because related tools only identify vulnerabilities but Opia tries to exploit them, removing the presence of false positives.
+</p>  
