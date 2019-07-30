@@ -102,7 +102,7 @@ The list of apps used to test Opia is presented below:
 | WishKaro | Lifestyle | 4.7 | Hybrid | com.apps.wishkaro |
 | Screen Addict | Entertainment | 2.8 | Hybrid | io.pintado.screenaddict |
 | Boneafite | Social | 9.5 | Hybrid | com.boneafite.boneafite |
-| Townylive | Photography | 13 | Hybrid | com.yashin.citylive} |
+| Townylive | Photography | 13 | Hybrid | com.yashin.citylive |
 | Konflist | Events | 3.8 | Hybrid | in.aniket.konflist |
 | Zinkerz Daily ACT | Education | 37 | Hybrid | com.zinkerz.zinkerzdailyac  |
 | BabyHandle | Lifestyle | 6.6 | Hybrid | com.babyhandle.mobile  |
