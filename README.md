@@ -35,7 +35,7 @@ Finally, the NoSQL database is hosted in Firestore.
 ### Prerequisites
 
 <p align="justify">
-Mobile Application -> Opia requires Android 6 or higher. We use Android Studio in order to install Opia on real devices or emulators.
+Mobile Application -> Opia requires Android 6 or higher. We use Android Studio in order to install Opia on real devices or emulators. Find the source code in <a href="https://github.com/TheSoftwareDesignLab/OPIA-mobile-app"> Opia Mobile App </a>
 </p>
 
 <p align="justify">
