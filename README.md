@@ -13,7 +13,7 @@ To learn more about Opia and see a real execution, watch the following video:
 
 ## Publications
 
-- _"OPIA: A Tool for On-Device Testing of Vulnerabilities in Android Applications"_, Laura Bello-Jiménez, Alejandro Mazuera-Rozo, Mario Linares-Vásquez and Gabriele Bavota, _Proceedings of the 35th IEEE International Conference  on Software Maintenance and Evolution ([ICSME'19](https://icsme2019.github.io/))_, Tool Demo Track, Cleveland, OH, USA, September 30th - October 4th, 2019, to appear 4 pages (52% Acceptance Rate) [[pdf](/assets/pdfs/icsme19.pdf)][[bibtex](/assets/pdfs/icsme19.bib)]
+- _"OPIA: A Tool for On-Device Testing of Vulnerabilities in Android Applications"_, Laura Bello-Jiménez, Alejandro Mazuera-Rozo, Mario Linares-Vásquez and Gabriele Bavota, _Proceedings of the 35th IEEE International Conference  on Software Maintenance and Evolution ([ICSME'19](https://icsme2019.github.io/))_, Tool Demo Track, Cleveland, OH, USA, September 30th - October 4th, 2019, to appear 4 pages (52% Acceptance Rate) [[pdf](/assets/pdfs/bello2019opia.pdf)][[bibtex](/assets/pdfs/bello2019opia.bib)]
 
 ## Technologies
 <p align="justify">
